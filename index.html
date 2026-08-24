@@ -36,7 +36,7 @@ h1{margin:0;font-size:1.7rem}
 .secondary{background:#eef2f6;color:var(--text)}
 .danger{background:var(--redsoft);color:var(--red)}
 .small{padding:7px 10px;font-size:.9rem}
-.formgrid{display:grid;grid-template-columns:1.1fr 2fr 170px auto;gap:10px}
+.formgrid{display:grid;grid-template-columns:1.05fr 1.8fr 150px 160px auto;gap:10px}
 label{display:block;font-size:.9rem;font-weight:700;margin-bottom:5px}
 input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px 12px;background:#fff;color:var(--text)}
 .folder{border:1px solid var(--line);border-radius:14px;margin-top:10px;overflow:hidden;background:#fff}
@@ -64,6 +64,7 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
 .badge.late{background:var(--redsoft);color:var(--red)}
 .badge.today{background:var(--warnsoft);color:var(--warn)}
 .badge.done{background:var(--greensoft);color:var(--green)}
+.badge.profile{background:#f1edf8;color:#6d4a91}
 .progress-mini{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;color:var(--muted);font-weight:700}
 .progress-line{width:58px;height:6px;background:#e8edf2;border-radius:999px;overflow:hidden}
 .progress-line span{display:block;height:100%;background:var(--accent)}
@@ -80,10 +81,19 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
 .ue-progress:first-child{border-top:0}
 .row{display:flex;justify-content:space-between;gap:12px;align-items:center}
 .actions,.intervals{display:flex;gap:8px;flex-wrap:wrap}
-.chip{display:flex;align-items:center;gap:6px;background:var(--soft);padding:8px 10px;border-radius:999px}
-.chip input{width:68px;padding:6px 8px}
 .hidden{display:none!important}
 .note{line-height:1.45}
+.profile-card{border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:10px;background:#fff}
+.profile-card:first-child{margin-top:0}
+.profile-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
+.profile-name{font-weight:800}
+.profile-desc{font-size:.86rem;color:var(--muted);margin-bottom:8px}
+.profile-intervals{display:flex;gap:8px;flex-wrap:wrap}
+.profile-chip{display:flex;align-items:center;gap:5px;background:var(--soft);border-radius:999px;padding:7px 9px}
+.profile-chip input{width:64px;padding:6px 7px}
+.ue-profile-row{display:grid;grid-template-columns:1fr 170px;gap:10px;align-items:center;border-top:1px solid var(--line);padding:10px 0}
+.ue-profile-row:first-child{border-top:0}
+.setting-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 @media(max-width:760px){
   .tabs{grid-template-columns:repeat(2,1fr)}
   .kpis{grid-template-columns:1fr}
@@ -92,6 +102,7 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
   .toolbar{align-items:stretch}
   .toolbar-left,.toolbar-right{width:100%}
   .toolbar .btn,.toolbar .subtab{flex:1}
+  .ue-profile-row{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -154,8 +165,10 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
         <div><label for="sheetUE">UE</label><select id="sheetUE" required></select></div>
         <div><label for="sheetName">Nom de la fiche</label><input id="sheetName" placeholder="Ex. Acides-bases" required></div>
         <div><label for="sheetJ0">Date J0</label><input id="sheetJ0" type="date" required></div>
+        <div><label for="sheetProfile">Profil</label><select id="sheetProfile" required></select></div>
         <div style="align-self:end"><button class="btn primary" type="submit">Ajouter</button></div>
       </form>
+      <p class="note" style="margin:9px 0 0">Le profil proposé reprend automatiquement celui de l’UE, mais tu peux en choisir un autre pour cette fiche.</p>
     </div>
 
     <div class="card">
@@ -172,13 +185,24 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
   </section>
 
   <section id="view-settings" class="hidden">
+
     <div class="card">
-      <h2>Rythme de révision</h2>
-      <p class="note">Les nouvelles fiches utilisent ce rythme. Les fiches déjà créées conservent le leur.</p>
-      <div id="intervals" class="intervals"></div>
-      <div class="actions" style="margin-top:10px">
-        <button id="addInterval" class="btn secondary" type="button">+ Ajouter un passage</button>
-        <button id="saveIntervals" class="btn primary" type="button">Enregistrer les J</button>
+      <h2>Profils de révision</h2>
+      <p class="note">Trois profils simples. Tu peux les ajuster, annuler les modifications ou revenir aux valeurs par défaut.</p>
+      <div id="profilesEditor"></div>
+      <div class="setting-actions">
+        <button id="resetProfilesBtn" class="btn secondary" type="button">Réinitialiser les profils par défaut</button>
+        <button id="cancelProfilesBtn" class="btn secondary" type="button">Annuler les modifications</button>
+        <button id="saveProfilesBtn" class="btn primary" type="button">Enregistrer les profils</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Profil par défaut de chaque UE</h2>
+      <p class="note">Ce choix est utilisé automatiquement lors de la création d’une nouvelle fiche. Il reste possible de choisir un autre profil fiche par fiche.</p>
+      <div id="ueProfilesEditor"></div>
+      <div class="setting-actions">
+        <button id="saveUEProfilesBtn" class="btn primary" type="button">Enregistrer les profils des UE</button>
       </div>
     </div>
 
@@ -191,6 +215,7 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
       </div>
       <p id="lastExport" class="note" style="margin-top:10px"></p>
     </div>
+
   </section>
 
 </div>
@@ -200,14 +225,27 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
 const KEY="methodeJ_ipad_v1";
 const DEFAULT_UES=["Bio cellulaire","Biochimie","Biophysique","Biostat","Chimie","Embryo-Histo","Physique"];
 const COLORS=["#4F81BD","#9BBB59","#8064A2","#4BACC6","#F79646","#C0504D","#77933C","#7F7F7F","#92D050","#2C4D75","#FFC000","#7030A0"];
+const DEFAULT_PROFILES={
+  standard:{name:"Standard",intervals:[1,3,7,15,30],desc:"Rythme général pour la majorité des fiches."},
+  reinforced:{name:"Renforcé",intervals:[1,2,4,7,15,30],desc:"Pour une fiche difficile ou une mémorisation fragile."},
+  spaced:{name:"Espacé",intervals:[2,7,15,30,60],desc:"Pour une fiche déjà bien maîtrisée ou l’entretien à plus long terme."}
+};
+
 let state=load();
 let mode="day";
 let expandAll=false;
+let profilesDraft=cloneProfiles(state.profiles);
 
+function cloneProfiles(p){
+  return JSON.parse(JSON.stringify(p));
+}
 function fresh(){
+  const ueProfiles={};
+  DEFAULT_UES.forEach(u=>ueProfiles[u]="standard");
   return{
     ues:[...DEFAULT_UES],
-    intervals:[1,3,7,15,30],
+    profiles:cloneProfiles(DEFAULT_PROFILES),
+    ueProfiles,
     sheets:[],
     lastExport:null,
     firstUse:new Date().toISOString(),
@@ -217,18 +255,39 @@ function fresh(){
 function migrate(s){
   if(!s.firstUse)s.firstUse=new Date().toISOString();
   if(!("backupSnoozeUntil" in s))s.backupSnoozeUntil=null;
+
+  // Migration depuis l'ancienne liste unique d'intervalles.
+  if(!s.profiles){
+    const old=Array.isArray(s.intervals)&&s.intervals.length?s.intervals:[1,3,7,15,30];
+    s.profiles=cloneProfiles(DEFAULT_PROFILES);
+    s.profiles.standard.intervals=[...old];
+  }
+
+  if(!s.ueProfiles)s.ueProfiles={};
+  s.ues.forEach(u=>{
+    if(!s.ueProfiles[u])s.ueProfiles[u]="standard";
+  });
+
   s.sheets.forEach(f=>{
     f.done=f.done||{};
     f.completedDates=f.completedDates||{};
     f.lastWorkedDate=f.lastWorkedDate||null;
-    if(!Array.isArray(f.intervals))f.intervals=[...s.intervals];
+
+    // Anciennes fiches : on garde leurs intervalles existants.
+    if(!f.profileId)f.profileId="standard";
+    if(!Array.isArray(f.intervals)){
+      const p=s.profiles[f.profileId]||s.profiles.standard;
+      f.intervals=[...p.intervals];
+    }
   });
+
+  delete s.intervals;
   return s;
 }
 function load(){
   try{
     const x=JSON.parse(localStorage.getItem(KEY));
-    if(!(x&&Array.isArray(x.ues)&&Array.isArray(x.sheets)&&Array.isArray(x.intervals)))return fresh();
+    if(!(x&&Array.isArray(x.ues)&&Array.isArray(x.sheets)))return fresh();
     return migrate(x);
   }catch(e){return fresh()}
 }
@@ -265,6 +324,9 @@ function ueColor(ue){
     for(let i=0;i<ue.length;i++)idx=(idx*31+ue.charCodeAt(i))%COLORS.length;
   }
   return COLORS[idx%COLORS.length];
+}
+function profileName(id){
+  return state.profiles[id]?.name||"Standard";
 }
 function plan(f){
   return f.intervals.map((n,i)=>({
@@ -346,6 +408,7 @@ function itemHTML(row,allowDone){
       <div class="itemname">${esc(f.name)}</div>
       <div class="badges">
         <span class="badge j">${n.label}</span>
+        <span class="badge profile">${esc(profileName(f.profileId))}</span>
         ${row.late?`<span class="badge late">${delay} j de retard</span>`:`<span class="badge today">Aujourd’hui</span>`}
         <span class="progress-mini">${done}/${total}<span class="progress-line"><span style="width:${progressPct(f)}%"></span></span></span>
       </div>
@@ -395,6 +458,7 @@ function render15(){
     const by={};
     day.rows.forEach(x=>(by[x.f.ue]??=[]).push(x));
     const ueNames=Object.keys(by);
+
     const dayBody=ueNames.length?ueNames.map(ue=>{
       const arr=by[ue],lateCount=arr.filter(x=>x.late).length;
       const body=arr.map(x=>{
@@ -405,6 +469,7 @@ function render15(){
             <div class="itemname">${esc(f.name)}</div>
             <div class="badges">
               <span class="badge j">${n.label}</span>
+              <span class="badge profile">${esc(profileName(f.profileId))}</span>
               ${x.late?`<span class="badge late">rattrapage${delay?` · ${delay} j`:""}</span>`:""}
               <span class="progress-mini">${done}/${totalP}<span class="progress-line"><span style="width:${progressPct(f)}%"></span></span></span>
             </div>
@@ -412,6 +477,7 @@ function render15(){
           </div>
         </div>`;
       }).join("");
+
       return folderHTML({
         id:folderId("15ue",day.date,ue),
         title:esc(ue),
@@ -502,13 +568,23 @@ function showKpiDetail(type){
       else if(delta<0)info+=` · ${Math.abs(delta)} j avant`;
       else info+=" · à la date prévue";
     }
-    return `<div class="history-entry"><strong>${esc(x.f.ue)} — ${esc(x.f.name)}</strong><div class="history-date">${x.p.label} · prévu le ${fmt(x.p.date)} · ${info}</div></div>`;
+    return `<div class="history-entry"><strong>${esc(x.f.ue)} — ${esc(x.f.name)}</strong><div class="history-date">${x.p.label} · ${esc(profileName(x.f.profileId))} · prévu le ${fmt(x.p.date)} · ${info}</div></div>`;
   }).join(""):'<div class="empty">Aucune révision effectuée.</div>'}`;
 }
 
-function refreshUESelect(){
-  sheetUE.innerHTML=state.ues.map(u=>`<option>${esc(u)}</option>`).join("");
+function profileOptions(selected){
+  return Object.entries(state.profiles).map(([id,p])=>`<option value="${id}" ${id===selected?"selected":""}>${esc(p.name)}</option>`).join("");
 }
+function refreshUESelect(){
+  sheetUE.innerHTML=state.ues.map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join("");
+  updateSheetProfileDefault();
+}
+function updateSheetProfileDefault(){
+  const ue=sheetUE.value;
+  const defaultId=state.ueProfiles[ue]||"standard";
+  sheetProfile.innerHTML=profileOptions(defaultId);
+}
+
 function renderUEs(){
   ueList.innerHTML=state.ues.map(ue=>{
     const arr=state.sheets.filter(f=>f.ue===ue);
@@ -518,7 +594,10 @@ function renderUEs(){
         <div>
           <div class="itemname">${esc(f.name)}</div>
           <div class="itemmeta">J0 : ${fmt(f.j0)} · ${n?`Prochaine : ${n.label} le ${fmt(n.date)}`:"Cycle terminé"}</div>
-          <div class="badges"><span class="progress-mini">${progressCount(f)}/${f.intervals.length}<span class="progress-line"><span style="width:${progressPct(f)}%"></span></span></span></div>
+          <div class="badges">
+            <span class="badge profile">${esc(profileName(f.profileId))}</span>
+            <span class="progress-mini">${progressCount(f)}/${f.intervals.length}<span class="progress-line"><span style="width:${progressPct(f)}%"></span></span></span>
+          </div>
         </div>
         <div class="actions">
           <button class="btn secondary small editBtn" data-id="${f.id}" type="button">Modifier</button>
@@ -527,10 +606,11 @@ function renderUEs(){
       </div>`;
     }).join(""):'<div class="empty">Aucune fiche pour cette UE.</div>';
 
+    const ueProfile=profileName(state.ueProfiles[ue]||"standard");
     return folderHTML({
       id:folderId("manageue",ue),
       title:esc(ue),
-      meta:`${arr.length} fiche${arr.length>1?"s":""}`,
+      meta:`${arr.length} fiche${arr.length>1?"s":""} · ${esc(ueProfile)}`,
       color:ueColor(ue),
       body
     });
@@ -559,6 +639,10 @@ function renderUEs(){
       const newJ0=prompt("Date J0 (AAAA-MM-JJ) :",f.j0);
       if(newJ0===null)return;
 
+      const profileChoices=Object.entries(state.profiles).map(([id,p])=>`${id} = ${p.name}`).join("\n");
+      const newProfile=prompt(`Profil de révision :\n${profileChoices}\n\nSaisir l’identifiant du profil :`,f.profileId||"standard");
+      if(newProfile===null)return;
+
       if(newName.trim())f.name=newName.trim();
 
       if(/^\d{4}-\d{2}-\d{2}$/.test(newJ0)&&newJ0!==f.j0){
@@ -576,10 +660,31 @@ function renderUEs(){
         f.j0=newJ0;
       }
 
+      if(state.profiles[newProfile]&&newProfile!==f.profileId){
+        const hasHistory=plan(f).some(p=>p.done);
+        if(hasHistory){
+          const change=confirm(`Changer le profil vers "${state.profiles[newProfile].name}" recalculera les prochaines échéances.\nLes validations déjà faites seront conservées par position dans la séquence.\n\nConfirmer ?`);
+          if(change){
+            f.profileId=newProfile;
+            f.intervals=[...state.profiles[newProfile].intervals];
+            trimHistoryToIntervals(f);
+          }
+        }else{
+          f.profileId=newProfile;
+          f.intervals=[...state.profiles[newProfile].intervals];
+        }
+      }
+
       save();
       renderAll();
     });
   });
+}
+
+function trimHistoryToIntervals(f){
+  const max=f.intervals.length;
+  Object.keys(f.done||{}).forEach(k=>{if(Number(k)>=max)delete f.done[k]});
+  Object.keys(f.completedDates||{}).forEach(k=>{if(Number(k)>=max)delete f.completedDates[k]});
 }
 
 function renderProgress(){
@@ -600,24 +705,83 @@ function renderProgress(){
   }).join("");
 }
 
-function renderIntervals(){
-  intervals.innerHTML=state.intervals.map((n,i)=>`
-    <div class="chip">
-      <span>J+</span>
-      <input class="ival" type="number" min="1" max="365" value="${n}">
-      <button class="btn danger small remI" data-i="${i}" type="button">×</button>
+function renderProfilesEditor(){
+  profilesEditor.innerHTML=Object.entries(profilesDraft).map(([id,p])=>`
+    <div class="profile-card" data-profile="${id}">
+      <div class="profile-head">
+        <div>
+          <div class="profile-name">${esc(p.name)}</div>
+          <div class="profile-desc">${esc(p.desc)}</div>
+        </div>
+        <button class="btn secondary small addProfileStep" data-profile="${id}" type="button">+ Passage</button>
+      </div>
+      <div class="profile-intervals">
+        ${p.intervals.map((n,i)=>`
+          <div class="profile-chip">
+            <span>J+</span>
+            <input class="profileInterval" type="number" min="1" max="365" value="${n}" data-profile="${id}" data-i="${i}">
+            <button class="btn danger small removeProfileStep" type="button" data-profile="${id}" data-i="${i}">×</button>
+          </div>`).join("")}
+      </div>
     </div>`).join("");
 
-  document.querySelectorAll(".remI").forEach(btn=>{
+  document.querySelectorAll(".addProfileStep").forEach(btn=>{
     btn.addEventListener("click",()=>{
-      if(state.intervals.length<=1){
+      const id=btn.dataset.profile;
+      const arr=profilesDraft[id].intervals;
+      arr.push((arr.at(-1)||1)+7);
+      renderProfilesEditor();
+    });
+  });
+
+  document.querySelectorAll(".removeProfileStep").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const id=btn.dataset.profile,i=Number(btn.dataset.i);
+      if(profilesDraft[id].intervals.length<=1){
         alert("Il faut garder au moins un passage.");
         return;
       }
-      state.intervals.splice(Number(btn.dataset.i),1);
-      renderIntervals();
+      syncProfilesDraftFromInputs();
+      profilesDraft[id].intervals.splice(i,1);
+      renderProfilesEditor();
     });
   });
+}
+function syncProfilesDraftFromInputs(){
+  document.querySelectorAll(".profileInterval").forEach(inp=>{
+    const id=inp.dataset.profile,i=Number(inp.dataset.i);
+    const v=Number(inp.value);
+    if(Number.isFinite(v)&&v>0&&v<=365)profilesDraft[id].intervals[i]=v;
+  });
+}
+function validateProfilesDraft(){
+  syncProfilesDraftFromInputs();
+  for(const [id,p] of Object.entries(profilesDraft)){
+    const vals=p.intervals.filter(v=>Number.isFinite(v)&&v>0&&v<=365).sort((a,b)=>a-b);
+    p.intervals=[...new Set(vals)];
+    if(!p.intervals.length)return false;
+  }
+  return true;
+}
+function profilesSummary(p){
+  return Object.values(p).map(x=>`${x.name}: ${x.intervals.map(n=>"J+"+n).join(", ")}`).join("\n");
+}
+function applyProfilesToExistingSheets(){
+  state.sheets.forEach(f=>{
+    const p=state.profiles[f.profileId]||state.profiles.standard;
+    f.intervals=[...p.intervals];
+    trimHistoryToIntervals(f);
+  });
+}
+
+function renderUEProfilesEditor(){
+  ueProfilesEditor.innerHTML=state.ues.map(ue=>`
+    <div class="ue-profile-row">
+      <div><strong>${esc(ue)}</strong></div>
+      <select class="ueProfileSelect" data-ue="${esc(ue)}">
+        ${profileOptions(state.ueProfiles[ue]||"standard")}
+      </select>
+    </div>`).join("");
 }
 
 function renderBackup(){
@@ -670,7 +834,8 @@ function renderAll(){
   renderPlanning();
   renderUEs();
   renderProgress();
-  renderIntervals();
+  renderProfilesEditor();
+  renderUEProfilesEditor();
   renderBackup();
 }
 
@@ -714,18 +879,25 @@ kpiTodayBtn.addEventListener("click",()=>showKpiDetail("today"));
 kpiLateBtn.addEventListener("click",()=>showKpiDetail("late"));
 kpiDoneBtn.addEventListener("click",()=>showKpiDetail("done"));
 
+sheetUE.addEventListener("change",updateSheetProfileDefault);
+
 sheetForm.addEventListener("submit",e=>{
   e.preventDefault();
+  const profileId=sheetProfile.value||state.ueProfiles[sheetUE.value]||"standard";
+  const p=state.profiles[profileId]||state.profiles.standard;
+
   state.sheets.push({
     id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),
     ue:sheetUE.value,
     name:sheetName.value.trim(),
     j0:sheetJ0.value,
-    intervals:[...state.intervals],
+    profileId,
+    intervals:[...p.intervals],
     done:{},
     completedDates:{},
     lastWorkedDate:null
   });
+
   save();
   sheetName.value="";
   sheetJ0.value=todayISO();
@@ -736,29 +908,56 @@ addUE.addEventListener("click",()=>{
   const n=prompt("Nom de la nouvelle UE :");
   if(!n||!n.trim())return;
   const clean=n.trim();
+
   if(state.ues.some(x=>x.toLowerCase()===clean.toLowerCase())){
     alert("Cette UE existe déjà.");
     return;
   }
+
+  const choices=Object.entries(state.profiles).map(([id,p])=>`${id} = ${p.name}`).join("\n");
+  let profileId=prompt(`Profil par défaut de cette UE :\n${choices}\n\nSaisir l’identifiant :`,"standard");
+  if(!profileId||!state.profiles[profileId])profileId="standard";
+
   state.ues.push(clean);
+  state.ueProfiles[clean]=profileId;
   save();
   renderAll();
 });
 
-addInterval.addEventListener("click",()=>{
-  state.intervals.push((state.intervals.at(-1)||1)+7);
-  renderIntervals();
+resetProfilesBtn.addEventListener("click",()=>{
+  profilesDraft=cloneProfiles(DEFAULT_PROFILES);
+  renderProfilesEditor();
 });
 
-saveIntervals.addEventListener("click",()=>{
-  const vals=[...document.querySelectorAll(".ival")]
-    .map(x=>Number(x.value))
-    .filter(x=>Number.isFinite(x)&&x>0&&x<=365)
-    .sort((a,b)=>a-b);
-  state.intervals=[...new Set(vals)];
+cancelProfilesBtn.addEventListener("click",()=>{
+  profilesDraft=cloneProfiles(state.profiles);
+  renderProfilesEditor();
+});
+
+saveProfilesBtn.addEventListener("click",()=>{
+  if(!validateProfilesDraft()){
+    alert("Chaque profil doit contenir au moins un passage valide.");
+    return;
+  }
+
+  const msg="Nouveaux profils :\n\n"+profilesSummary(profilesDraft)+
+    "\n\nIls seront appliqués aux fiches existantes utilisant ces profils. Les validations déjà réalisées seront conservées autant que possible.\n\nConfirmer ?";
+  if(!confirm(msg))return;
+
+  state.profiles=cloneProfiles(profilesDraft);
+  applyProfilesToExistingSheets();
   save();
   renderAll();
-  alert("Nouveau rythme enregistré pour les prochaines fiches.");
+  alert("Profils enregistrés et planning recalculé.");
+});
+
+saveUEProfilesBtn.addEventListener("click",()=>{
+  document.querySelectorAll(".ueProfileSelect").forEach(sel=>{
+    state.ueProfiles[sel.dataset.ue]=sel.value;
+  });
+  save();
+  renderAll();
+  alert("Profils par défaut des UE enregistrés.");
 });
 
 exportBtn.addEventListener("click",exportBackup);
@@ -772,11 +971,14 @@ backupLaterBtn.addEventListener("click",()=>{
 importInput.addEventListener("change",async e=>{
   const f=e.target.files?.[0];
   if(!f)return;
+
   try{
     const x=JSON.parse(await f.text());
-    if(!Array.isArray(x.ues)||!Array.isArray(x.intervals)||!Array.isArray(x.sheets))throw 0;
+    if(!Array.isArray(x.ues)||!Array.isArray(x.sheets))throw 0;
+
     if(confirm("Remplacer les données actuelles par cette sauvegarde ?")){
       state=migrate(x);
+      profilesDraft=cloneProfiles(state.profiles);
       save();
       renderAll();
       alert("Sauvegarde restaurée.");
@@ -784,6 +986,7 @@ importInput.addEventListener("change",async e=>{
   }catch(_){
     alert("Fichier de sauvegarde invalide.");
   }
+
   e.target.value="";
 });
 
