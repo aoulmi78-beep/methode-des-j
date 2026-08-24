@@ -94,6 +94,12 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
 .ue-profile-row{display:grid;grid-template-columns:1fr 170px;gap:10px;align-items:center;border-top:1px solid var(--line);padding:10px 0}
 .ue-profile-row:first-child{border-top:0}
 .setting-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+.profile-modal-backdrop{position:fixed;inset:0;background:rgba(20,30,40,.35);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999}
+.profile-modal{width:min(420px,100%);background:#fff;border-radius:16px;padding:18px;border:1px solid var(--line);box-shadow:0 16px 45px rgba(0,0,0,.18)}
+.profile-modal h3{margin:0 0 12px}
+.profile-modal .actions{margin-top:14px;justify-content:flex-end}
+
 @media(max-width:760px){
   .tabs{grid-template-columns:repeat(2,1fr)}
   .kpis{grid-template-columns:1fr}
@@ -519,7 +525,7 @@ function wireFolders(){
 }
 function wireDoneButtons(scope=document){
   scope.querySelectorAll(".doneTask").forEach(btn=>{
-    btn.addEventListener("click",()=>{
+    btn.addEventListener("click",async ()=>{
       const f=state.sheets.find(x=>x.id===btn.dataset.id);
       if(!f)return;
       markDone(f,Number(btn.dataset.i));
@@ -572,6 +578,30 @@ function showKpiDetail(type){
   }).join(""):'<div class="empty">Aucune révision effectuée.</div>'}`;
 }
 
+
+function chooseProfile(title,selected){
+  return new Promise(resolve=>{
+    const wrap=document.createElement("div");
+    wrap.className="profile-modal-backdrop";
+    wrap.innerHTML=`<div class="profile-modal">
+      <h3>${esc(title)}</h3>
+      <label for="profileModalSelect">Profil</label>
+      <select id="profileModalSelect">${profileOptions(selected)}</select>
+      <div class="actions">
+        <button class="btn secondary" id="profileModalCancel" type="button">Annuler</button>
+        <button class="btn primary" id="profileModalOk" type="button">Valider</button>
+      </div>
+    </div>`;
+    document.body.appendChild(wrap);
+    const sel=wrap.querySelector("#profileModalSelect");
+    const close=v=>{wrap.remove();resolve(v)};
+    wrap.querySelector("#profileModalCancel").addEventListener("click",()=>close(null));
+    wrap.querySelector("#profileModalOk").addEventListener("click",()=>close(sel.value));
+    wrap.addEventListener("click",e=>{if(e.target===wrap)close(null)});
+    sel.focus();
+  });
+}
+
 function profileOptions(selected){
   return Object.entries(state.profiles).map(([id,p])=>`<option value="${id}" ${id===selected?"selected":""}>${esc(p.name)}</option>`).join("");
 }
@@ -607,16 +637,61 @@ function renderUEs(){
     }).join(""):'<div class="empty">Aucune fiche pour cette UE.</div>';
 
     const ueProfile=profileName(state.ueProfiles[ue]||"standard");
+    const ueActions=`<div class="actions" style="margin-bottom:8px">
+      <button class="btn secondary small editUEBtn" data-ue="${esc(ue)}" type="button">Modifier l’UE</button>
+      <button class="btn danger small deleteUEBtn" data-ue="${esc(ue)}" type="button">Supprimer l’UE</button>
+    </div>`;
     return folderHTML({
       id:folderId("manageue",ue),
       title:esc(ue),
       meta:`${arr.length} fiche${arr.length>1?"s":""} · ${esc(ueProfile)}`,
       color:ueColor(ue),
-      body
+      body:ueActions+body
     });
   }).join("");
 
   wireFolders();
+
+  document.querySelectorAll(".editUEBtn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const oldName=btn.dataset.ue;
+      const newName=prompt("Nouveau nom de l’UE :",oldName);
+      if(newName===null)return;
+      const clean=newName.trim();
+      if(!clean||clean===oldName)return;
+      if(state.ues.some(u=>u.toLowerCase()===clean.toLowerCase())){
+        alert("Une UE avec ce nom existe déjà.");
+        return;
+      }
+      const idx=state.ues.indexOf(oldName);
+      if(idx>=0)state.ues[idx]=clean;
+      state.sheets.forEach(f=>{if(f.ue===oldName)f.ue=clean});
+      state.ueProfiles[clean]=state.ueProfiles[oldName]||"standard";
+      delete state.ueProfiles[oldName];
+      save();
+      renderAll();
+    });
+  });
+
+  document.querySelectorAll(".deleteUEBtn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const ue=btn.dataset.ue;
+      const count=state.sheets.filter(f=>f.ue===ue).length;
+      if(count>0){
+        const ok=confirm(`L’UE "${ue}" contient ${count} fiche${count>1?"s":""}.\n\nLa supprimer supprimera aussi toutes ces fiches et leur historique. Continuer ?`);
+        if(!ok)return;
+        const really=confirm("Confirmer une seconde fois la suppression définitive de l’UE et de toutes ses fiches ?");
+        if(!really)return;
+        state.sheets=state.sheets.filter(f=>f.ue!==ue);
+      }else{
+        if(!confirm(`Supprimer l’UE "${ue}" ?`))return;
+      }
+      state.ues=state.ues.filter(u=>u!==ue);
+      delete state.ueProfiles[ue];
+      save();
+      renderAll();
+    });
+  });
 
   document.querySelectorAll(".delBtn").forEach(btn=>{
     btn.addEventListener("click",()=>{
@@ -639,8 +714,7 @@ function renderUEs(){
       const newJ0=prompt("Date J0 (AAAA-MM-JJ) :",f.j0);
       if(newJ0===null)return;
 
-      const profileChoices=Object.entries(state.profiles).map(([id,p])=>`${id} = ${p.name}`).join("\n");
-      const newProfile=prompt(`Profil de révision :\n${profileChoices}\n\nSaisir l’identifiant du profil :`,f.profileId||"standard");
+      const newProfile=await chooseProfile("Choisir le profil de révision",f.profileId||"standard");
       if(newProfile===null)return;
 
       if(newName.trim())f.name=newName.trim();
@@ -904,7 +978,7 @@ sheetForm.addEventListener("submit",e=>{
   renderAll();
 });
 
-addUE.addEventListener("click",()=>{
+addUE.addEventListener("click",async ()=>{
   const n=prompt("Nom de la nouvelle UE :");
   if(!n||!n.trim())return;
   const clean=n.trim();
@@ -914,9 +988,8 @@ addUE.addEventListener("click",()=>{
     return;
   }
 
-  const choices=Object.entries(state.profiles).map(([id,p])=>`${id} = ${p.name}`).join("\n");
-  let profileId=prompt(`Profil par défaut de cette UE :\n${choices}\n\nSaisir l’identifiant :`,"standard");
-  if(!profileId||!state.profiles[profileId])profileId="standard";
+  let profileId=await chooseProfile("Profil par défaut de cette UE","standard");
+  if(profileId===null)return;
 
   state.ues.push(clean);
   state.ueProfiles[clean]=profileId;
