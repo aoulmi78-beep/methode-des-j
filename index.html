@@ -9,81 +9,95 @@
 <style>
 :root{
   --bg:#f6f8fb;--card:#fff;--text:#17212b;--muted:#6b7785;--line:#dfe5eb;
-  --a:#2f6f9f;--soft:#eaf2f8;--red:#b42334;--rsoft:#fbe8ea;
-  --warn:#8a6800;--wsoft:#fff1bf;--green:#25713b;--gsoft:#e1f1e5;
+  --accent:#2f6f9f;--soft:#eaf2f8;--red:#b42334;--redsoft:#fbe8ea;
+  --warn:#8a6800;--warnsoft:#fff1bf;--green:#25713b;--greensoft:#e1f1e5;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,input,select{font:inherit}
 button{cursor:pointer}
 .app{max-width:980px;margin:auto;padding:18px 16px 80px}
-.top,.row,.uehead{display:flex;justify-content:space-between;gap:12px;align-items:center}
-.top{align-items:flex-start;margin-bottom:14px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
 h1{margin:0;font-size:1.7rem}
 .muted,.note{color:var(--muted);font-size:.92rem}
 .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
 .tab,.subtab{border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 8px;font-weight:700}
-.tab.active,.subtab.active{background:var(--a);color:#fff;border-color:var(--a)}
+.tab.active,.subtab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
 .card h2{margin:0 0 12px;font-size:1.15rem}
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .kpi{border:0;background:var(--soft);padding:14px;border-radius:14px;text-align:center;color:var(--text)}
-.kpi b{display:block;font-size:1.55rem;color:var(--a)}
+.kpi b{display:block;font-size:1.55rem;color:var(--accent)}
 .kpi .hint{font-size:.78rem;color:var(--muted);margin-top:3px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.toolbar-left,.toolbar-right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:0;border-radius:11px;padding:10px 14px;font-weight:750}
+.primary{background:var(--accent);color:#fff}
+.secondary{background:#eef2f6;color:var(--text)}
+.danger{background:var(--redsoft);color:var(--red)}
+.small{padding:7px 10px;font-size:.9rem}
 .formgrid{display:grid;grid-template-columns:1.1fr 2fr 170px auto;gap:10px}
 label{display:block;font-size:.9rem;font-weight:700;margin-bottom:5px}
 input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px 12px;background:#fff;color:var(--text)}
-.btn{border:0;border-radius:11px;padding:10px 14px;font-weight:750}
-.primary{background:var(--a);color:#fff}
-.secondary{background:#eef2f6;color:var(--text)}
-.danger{background:var(--rsoft);color:var(--red)}
-.small{padding:7px 10px;font-size:.9rem}
-.ue{border-top:1px solid var(--line);padding:13px 0}
-.ue:first-child{border-top:0}
-.uetitle,.itemname{font-weight:800}
-.item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-top:8px}
-.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:.78rem;font-weight:750;margin-left:6px}
-.badge.late{background:var(--rsoft);color:var(--red)}
-.badge.today{background:var(--wsoft);color:var(--warn)}
-.badge.done{background:var(--gsoft);color:var(--green)}
-.progress{height:10px;background:#e8edf2;border-radius:999px;overflow:hidden;margin-top:8px}
-.progress span{display:block;height:100%;background:var(--a)}
-.actions,.intervals,.subtabs,.datebar{display:flex;gap:8px;flex-wrap:wrap}
-.chip{display:flex;align-items:center;gap:6px;background:var(--soft);padding:8px 10px;border-radius:999px}
-.chip input{width:68px;padding:6px 8px}
+.folder{border:1px solid var(--line);border-radius:14px;margin-top:10px;overflow:hidden;background:#fff}
+.folder-head{width:100%;border:0;background:#fff;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left}
+.folder-head:hover{background:#fafcfd}
+.folder-left{display:flex;align-items:center;gap:10px;min-width:0}
+.dot{width:12px;height:12px;border-radius:50%;flex:none}
+.chev{font-size:1rem;color:var(--muted);width:18px;display:inline-block;transition:transform .15s ease}
+.folder.open>.folder-head .chev{transform:rotate(90deg)}
+.folder-title{font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folder-meta{font-size:.87rem;color:var(--muted);white-space:nowrap}
+.folder-body{display:none;border-top:1px solid var(--line);padding:8px 12px 12px;background:#fbfcfd}
+.folder.open>.folder-body{display:block}
+.day-folder>.folder-head{background:#fff}
+.day-folder.open>.folder-head{background:#f8fafc}
+.ue-subfolder{border:1px solid var(--line);border-radius:12px;margin-top:8px;overflow:hidden;background:#fff}
+.ue-subfolder .folder-head{padding:10px 12px}
+.ue-subfolder .folder-body{padding:6px 10px 10px}
+.item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-top:8px;background:#fff}
+.itemname{font-weight:800}
+.itemmeta{color:var(--muted);font-size:.88rem;margin-top:4px}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:.78rem;font-weight:800}
+.badge.j{background:var(--soft);color:var(--accent)}
+.badge.late{background:var(--redsoft);color:var(--red)}
+.badge.today{background:var(--warnsoft);color:var(--warn)}
+.badge.done{background:var(--greensoft);color:var(--green)}
+.progress-mini{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;color:var(--muted);font-weight:700}
+.progress-line{width:58px;height:6px;background:#e8edf2;border-radius:999px;overflow:hidden}
+.progress-line span{display:block;height:100%;background:var(--accent)}
+.summaryline{background:var(--soft);border-radius:12px;padding:10px 12px;margin-bottom:10px;font-weight:700}
 .empty{text-align:center;color:var(--muted);padding:22px}
-.hidden{display:none!important}
-.note{line-height:1.45}
-.datebar{align-items:end;margin-bottom:12px}
-.datebar .grow{flex:1;min-width:180px}
-.daycard{border-top:1px solid var(--line);padding:10px 0}
-.daycard:first-child{border-top:0}
-.daycard.compact{padding:7px 0}
-.daytitle{font-weight:800}
-.daycount{font-size:.88rem;color:var(--muted)}
-.summaryline{background:var(--soft);border-radius:12px;padding:10px 12px;margin-bottom:8px;font-weight:700}
-.warning{background:var(--wsoft);color:var(--warn);border-radius:10px;padding:8px 10px;margin-top:7px;font-size:.86rem}
-.backup-banner{background:var(--wsoft);border:1px solid #ecd889;border-radius:14px;padding:12px 14px;margin-bottom:14px}
-.backup-banner strong{display:block;margin-bottom:4px}
 .history-entry{border-top:1px solid var(--line);padding:10px 0}
 .history-entry:first-child{border-top:0}
-.history-date{font-size:.87rem;color:var(--muted)}
-.load-light{background:var(--gsoft);color:var(--green)}
-.load-medium{background:var(--wsoft);color:var(--warn)}
-.load-heavy{background:var(--rsoft);color:var(--red)}
-.pdf-row{display:flex;justify-content:flex-end;margin-top:10px}
+.history-date{font-size:.87rem;color:var(--muted);margin-top:3px}
+.backup-banner{background:var(--warnsoft);border:1px solid #ecd889;border-radius:14px;padding:12px 14px;margin-bottom:14px}
+.backup-banner strong{display:block;margin-bottom:4px}
+.progress{height:10px;background:#e8edf2;border-radius:999px;overflow:hidden;margin-top:8px}
+.progress span{display:block;height:100%;background:var(--accent)}
+.ue-progress{border-top:1px solid var(--line);padding:12px 0}
+.ue-progress:first-child{border-top:0}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.actions,.intervals{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:6px;background:var(--soft);padding:8px 10px;border-radius:999px}
+.chip input{width:68px;padding:6px 8px}
+.hidden{display:none!important}
+.note{line-height:1.45}
 @media(max-width:760px){
   .tabs{grid-template-columns:repeat(2,1fr)}
   .kpis{grid-template-columns:1fr}
   .formgrid{grid-template-columns:1fr}
   .item{grid-template-columns:1fr}
-  .pdf-row{justify-content:stretch}
-  .pdf-row .btn{width:100%}
+  .toolbar{align-items:stretch}
+  .toolbar-left,.toolbar-right{width:100%}
+  .toolbar .btn,.toolbar .subtab{flex:1}
 }
 </style>
 </head>
 <body>
 <div class="app">
+
   <div class="top">
     <div><h1>Méthode des J</h1><div id="dateLabel" class="muted"></div></div>
     <div id="saveLabel" class="muted">Enregistrement automatique actif</div>
@@ -91,7 +105,7 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
 
   <div id="backupBanner" class="backup-banner hidden">
     <strong>Sauvegarde conseillée</strong>
-    <div class="note" id="backupBannerText"></div>
+    <div id="backupBannerText" class="note"></div>
     <div class="actions" style="margin-top:9px">
       <button id="backupNowBtn" class="btn primary small" type="button">Sauvegarder maintenant</button>
       <button id="backupLaterBtn" class="btn secondary small" type="button">Plus tard</button>
@@ -99,13 +113,13 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
   </div>
 
   <div class="tabs">
-    <button class="tab active" data-tab="today" type="button">Planning</button>
+    <button class="tab active" data-tab="planning" type="button">Planning</button>
     <button class="tab" data-tab="ues" type="button">Mes UE</button>
     <button class="tab" data-tab="progress" type="button">Progression</button>
     <button class="tab" data-tab="settings" type="button">Réglages</button>
   </div>
 
-  <section id="view-today">
+  <section id="view-planning">
     <div class="kpis">
       <button class="kpi" id="kpiTodayBtn" type="button"><span>À faire aujourd’hui</span><b id="kToday">0</b><div class="hint">Voir le détail</div></button>
       <button class="kpi" id="kpiLateBtn" type="button"><span>En retard</span><b id="kLate">0</b><div class="hint">Voir le détail</div></button>
@@ -115,23 +129,21 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
     <div id="kpiDetail" class="card hidden" style="margin-top:14px"></div>
 
     <div class="card" style="margin-top:14px">
-      <div class="datebar">
-        <div class="grow"><label for="planDate">Date à consulter</label><input id="planDate" type="date"></div>
-        <button id="todayBtn" class="btn secondary" type="button">Aujourd’hui</button>
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <button class="subtab active" data-mode="day" type="button">Journée</button>
+          <button class="subtab" data-mode="15" type="button">15 prochains jours</button>
+        </div>
+        <div class="toolbar-right">
+          <button id="expandAllBtn" class="btn secondary small" type="button">Tout déplier</button>
+          <button id="collapseAllBtn" class="btn secondary small" type="button">Tout replier</button>
+        </div>
       </div>
-      <div class="subtabs">
-        <button class="subtab active" data-mode="day" type="button">Journée</button>
-        <button class="subtab" data-mode="15" type="button">15 prochains jours</button>
-      </div>
-      <div class="pdf-row">
-        <button id="pdfBtn" class="btn primary" type="button">PDF planning · 2 semaines</button>
-      </div>
-      <p class="note" style="margin:9px 0 0">Le PDF commence au lundi de la semaine actuelle et couvre deux semaines complètes.</p>
     </div>
 
     <div class="card">
-      <h2 id="planTitle">Programme du jour</h2>
-      <div id="todayList"></div>
+      <h2 id="planningTitle">Aujourd’hui</h2>
+      <div id="planningContent"></div>
     </div>
   </section>
 
@@ -145,6 +157,7 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
         <div style="align-self:end"><button class="btn primary" type="submit">Ajouter</button></div>
       </form>
     </div>
+
     <div class="card">
       <div class="row"><h2>Mes UE</h2><button id="addUE" class="btn secondary small" type="button">+ Ajouter une UE</button></div>
       <div id="ueList"></div>
@@ -152,13 +165,16 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
   </section>
 
   <section id="view-progress" class="hidden">
-    <div class="card"><h2>Progression par UE</h2><div id="progressList"></div></div>
+    <div class="card">
+      <h2>Progression par UE</h2>
+      <div id="progressList"></div>
+    </div>
   </section>
 
   <section id="view-settings" class="hidden">
     <div class="card">
       <h2>Rythme de révision</h2>
-      <p class="note">Les nouvelles fiches utiliseront ces J+. Les fiches déjà créées gardent leur rythme.</p>
+      <p class="note">Les nouvelles fiches utilisent ce rythme. Les fiches déjà créées conservent le leur.</p>
       <div id="intervals" class="intervals"></div>
       <div class="actions" style="margin-top:10px">
         <button id="addInterval" class="btn secondary" type="button">+ Ajouter un passage</button>
@@ -168,7 +184,7 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
 
     <div class="card">
       <h2>Sauvegarde</h2>
-      <p class="note">Tout est enregistré automatiquement sur cet appareil. Pour une vraie sécurité, exporte régulièrement une copie dans Fichiers / iCloud Drive.</p>
+      <p class="note">Les données sont enregistrées automatiquement sur cet appareil. Exporte régulièrement une copie dans Fichiers / iCloud Drive.</p>
       <div class="actions">
         <button id="exportBtn" class="btn primary" type="button">Exporter la sauvegarde</button>
         <label class="btn secondary">Importer une sauvegarde<input id="importInput" type="file" accept=".json,application/json" style="display:none"></label>
@@ -176,24 +192,27 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
       <p id="lastExport" class="note" style="margin-top:10px"></p>
     </div>
   </section>
+
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script>
 (function(){
-const DEFAULT_UES=["Bio cellulaire","Biochimie","Biophysique","Biostat","Chimie","Embryo-Histo","Physique"];
 const KEY="methodeJ_ipad_v1";
-const UE_COLORS=[
-  [79,129,189],[155,187,89],[128,100,162],[75,172,198],
-  [247,150,70],[192,80,77],[119,146,60],[128,128,128],
-  [146,208,80],[44,77,117],[255,192,0],[112,48,160]
-];
+const DEFAULT_UES=["Bio cellulaire","Biochimie","Biophysique","Biostat","Chimie","Embryo-Histo","Physique"];
+const COLORS=["#4F81BD","#9BBB59","#8064A2","#4BACC6","#F79646","#C0504D","#77933C","#7F7F7F","#92D050","#2C4D75","#FFC000","#7030A0"];
 let state=load();
 let mode="day";
+let expandAll=false;
 
 function fresh(){
-  const now=new Date().toISOString();
-  return{ues:[...DEFAULT_UES],intervals:[1,3,7,15,30],sheets:[],lastExport:null,firstUse:now,backupSnoozeUntil:null};
+  return{
+    ues:[...DEFAULT_UES],
+    intervals:[1,3,7,15,30],
+    sheets:[],
+    lastExport:null,
+    firstUse:new Date().toISOString(),
+    backupSnoozeUntil:null
+  };
 }
 function migrate(s){
   if(!s.firstUse)s.firstUse=new Date().toISOString();
@@ -223,24 +242,41 @@ function todayISO(){
 }
 function addDays(iso,n){
   const[y,m,d]=iso.split("-").map(Number),x=new Date(Date.UTC(y,m-1,d));
-  x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10);
+  x.setUTCDate(x.getUTCDate()+n);
+  return x.toISOString().slice(0,10);
 }
 function daysBetween(a,b){
-  const [ay,am,ad]=a.split("-").map(Number),[by,bm,bd]=b.split("-").map(Number);
+  const[ay,am,ad]=a.split("-").map(Number),[by,bm,bd]=b.split("-").map(Number);
   return Math.round((Date.UTC(by,bm-1,bd)-Date.UTC(ay,am-1,ad))/86400000);
 }
 function fmt(iso,long=false){
   const[y,m,d]=iso.split("-").map(Number);
-  return new Date(Date.UTC(y,m-1,d)).toLocaleDateString("fr-FR",long
-    ?{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}
-    :{day:"2-digit",month:"2-digit",year:"numeric",timeZone:"UTC"});
+  return new Date(Date.UTC(y,m-1,d)).toLocaleDateString("fr-FR",
+    long?{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}
+        :{day:"2-digit",month:"2-digit",year:"numeric",timeZone:"UTC"});
 }
-function esc(x){return String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
-function plan(f){return f.intervals.map((n,i)=>({i,label:"J+"+n,date:addDays(f.j0,n),done:!!f.done?.[i],actual:f.completedDates?.[i]||null}))}
+function esc(x){
+  return String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+}
+function ueColor(ue){
+  let idx=state.ues.indexOf(ue);
+  if(idx<0){
+    idx=0;
+    for(let i=0;i<ue.length;i++)idx=(idx*31+ue.charCodeAt(i))%COLORS.length;
+  }
+  return COLORS[idx%COLORS.length];
+}
+function plan(f){
+  return f.intervals.map((n,i)=>({
+    i,label:"J+"+n,date:addDays(f.j0,n),
+    done:!!f.done?.[i],
+    actual:f.completedDates?.[i]||null
+  }));
+}
 function nextPending(f){return plan(f).find(x=>!x.done)||null}
-function progress(f){return f.intervals.length?Math.round(plan(f).filter(x=>x.done).length/f.intervals.length*100):0}
-function completedCount(){return state.sheets.reduce((n,f)=>n+plan(f).filter(x=>x.done).length,0)}
-function refreshUESelect(){sheetUE.innerHTML=state.ues.map(u=>`<option>${esc(u)}</option>`).join("")}
+function progressCount(f){return plan(f).filter(x=>x.done).length}
+function progressPct(f){return f.intervals.length?Math.round(progressCount(f)/f.intervals.length*100):0}
+function completedCount(){return state.sheets.reduce((n,f)=>n+progressCount(f),0)}
 
 function todayTasks(kind="all"){
   const t=todayISO(),rows=[];
@@ -255,21 +291,190 @@ function todayTasks(kind="all"){
   });
   return rows.sort((a,b)=>a.n.date.localeCompare(b.n.date)||a.f.ue.localeCompare(b.f.ue));
 }
-function markDone(f,index){
-  const t=todayISO();
-  if(f.lastWorkedDate===t){alert("Cette fiche a déjà été validée aujourd’hui.");return}
-  f.done=f.done||{};f.completedDates=f.completedDates||{};
-  f.done[index]=true;f.completedDates[index]=t;f.lastWorkedDate=t;save();renderAll();
+
+function simulate15(){
+  const start=todayISO();
+  const sim=state.sheets.map(f=>({f,done:{...f.done},last:f.lastWorkedDate}));
+  const days=[];
+  for(let d=0;d<15;d++){
+    const date=addDays(start,d),rows=[];
+    sim.forEach(obj=>{
+      if(obj.last===date)return;
+      const ps=obj.f.intervals.map((n,i)=>({i,label:"J+"+n,date:addDays(obj.f.j0,n),done:!!obj.done[i]}));
+      const n=ps.find(x=>!x.done);
+      if(!n||n.date>date)return;
+      rows.push({f:obj.f,n,late:n.date<date});
+      obj.done[n.i]=true;
+      obj.last=date;
+    });
+    days.push({date,rows});
+  }
+  return days;
 }
-function taskHTML(x,button=true){
-  const delay=Math.max(0,daysBetween(x.n.date,todayISO()));
-  return `<div class="item"><div><div class="itemname">${esc(x.f.name)}</div><div class="muted">${esc(x.f.ue)} · ${x.n.label} · prévu le ${fmt(x.n.date)} ${x.late?`<span class="badge late">${delay} j de retard</span>`:'<span class="badge today">Aujourd’hui</span>'}</div></div>${button?`<button class="btn primary small doneTask" data-id="${x.f.id}" data-i="${x.n.i}" type="button">Fait</button>`:""}</div>`;
+
+function folderId(prefix,...parts){
+  return prefix+"-"+parts.join("-").replace(/[^a-zA-Z0-9_-]/g,"_");
+}
+function isOpen(id){
+  if(expandAll)return true;
+  return sessionStorage.getItem("open:"+id)==="1";
+}
+function setOpen(id,open){
+  sessionStorage.setItem("open:"+id,open?"1":"0");
+}
+function folderHTML({id,title,meta,color,body,classes=""}){
+  const open=isOpen(id);
+  return `<div class="folder ${classes} ${open?"open":""}" data-folder="${esc(id)}">
+    <button class="folder-head" type="button" data-toggle-folder="${esc(id)}">
+      <div class="folder-left">
+        <span class="chev">›</span>
+        ${color?`<span class="dot" style="background:${color}"></span>`:""}
+        <span class="folder-title">${title}</span>
+      </div>
+      <span class="folder-meta">${meta}</span>
+    </button>
+    <div class="folder-body">${body}</div>
+  </div>`;
+}
+
+function itemHTML(row,allowDone){
+  const f=row.f,n=row.n;
+  const done=progressCount(f),total=f.intervals.length;
+  const delay=row.late?Math.max(1,daysBetween(n.date,todayISO())):0;
+  return `<div class="item">
+    <div>
+      <div class="itemname">${esc(f.name)}</div>
+      <div class="badges">
+        <span class="badge j">${n.label}</span>
+        ${row.late?`<span class="badge late">${delay} j de retard</span>`:`<span class="badge today">Aujourd’hui</span>`}
+        <span class="progress-mini">${done}/${total}<span class="progress-line"><span style="width:${progressPct(f)}%"></span></span></span>
+      </div>
+      <div class="itemmeta">Prévu le ${fmt(n.date)}</div>
+    </div>
+    ${allowDone?`<button class="btn primary small doneTask" data-id="${f.id}" data-i="${n.i}" type="button">Fait</button>`:""}
+  </div>`;
+}
+
+function renderDay(){
+  planningTitle.textContent="Aujourd’hui";
+  const rows=todayTasks("all"),by={};
+  rows.forEach(x=>(by[x.f.ue]??=[]).push(x));
+  const ues=Object.keys(by);
+
+  if(!ues.length){
+    planningContent.innerHTML='<div class="empty">Aucune fiche à revoir aujourd’hui.</div>';
+    return;
+  }
+
+  let out="";
+  ues.forEach(ue=>{
+    const arr=by[ue];
+    const lateCount=arr.filter(x=>x.late).length;
+    const meta=`${arr.length} fiche${arr.length>1?"s":""}${lateCount?` · ${lateCount} retard${lateCount>1?"s":""}`:""}`;
+    const body=arr.map(x=>itemHTML(x,true)).join("");
+    out+=folderHTML({
+      id:folderId("dayue",ue),
+      title:esc(ue),
+      meta,
+      color:ueColor(ue),
+      body
+    });
+  });
+  planningContent.innerHTML=out;
+  wireFolders();
+  wireDoneButtons(planningContent);
+}
+
+function render15(){
+  planningTitle.textContent="15 prochains jours";
+  const days=simulate15();
+  const total=days.reduce((n,d)=>n+d.rows.length,0);
+  let out=`<div class="summaryline">${total} révision${total>1?"s":""} prévues sur les 15 prochains jours</div>`;
+
+  days.forEach(day=>{
+    const by={};
+    day.rows.forEach(x=>(by[x.f.ue]??=[]).push(x));
+    const ueNames=Object.keys(by);
+    const dayBody=ueNames.length?ueNames.map(ue=>{
+      const arr=by[ue],lateCount=arr.filter(x=>x.late).length;
+      const body=arr.map(x=>{
+        const f=x.f,n=x.n,done=progressCount(f),totalP=f.intervals.length;
+        const delay=x.late?Math.max(1,daysBetween(n.date,day.date)):0;
+        return `<div class="item">
+          <div>
+            <div class="itemname">${esc(f.name)}</div>
+            <div class="badges">
+              <span class="badge j">${n.label}</span>
+              ${x.late?`<span class="badge late">rattrapage${delay?` · ${delay} j`:""}</span>`:""}
+              <span class="progress-mini">${done}/${totalP}<span class="progress-line"><span style="width:${progressPct(f)}%"></span></span></span>
+            </div>
+            <div class="itemmeta">Date théorique : ${fmt(n.date)}</div>
+          </div>
+        </div>`;
+      }).join("");
+      return folderHTML({
+        id:folderId("15ue",day.date,ue),
+        title:esc(ue),
+        meta:`${arr.length} fiche${arr.length>1?"s":""}${lateCount?` · ${lateCount} rattrapage${lateCount>1?"s":""}`:""}`,
+        color:ueColor(ue),
+        body,
+        classes:"ue-subfolder"
+      });
+    }).join(""):'<div class="empty">Rien de prévu.</div>';
+
+    out+=folderHTML({
+      id:folderId("day15",day.date),
+      title:fmt(day.date,true),
+      meta:`${day.rows.length} révision${day.rows.length>1?"s":""}`,
+      body:dayBody,
+      classes:"day-folder"
+    });
+  });
+
+  planningContent.innerHTML=out;
+  wireFolders();
+}
+
+function renderPlanning(){
+  renderKpis();
+  mode==="day"?renderDay():render15();
+}
+
+function wireFolders(){
+  document.querySelectorAll("[data-toggle-folder]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const id=btn.dataset.toggleFolder;
+      const folder=document.querySelector(`[data-folder="${CSS.escape(id)}"]`);
+      const open=!folder.classList.contains("open");
+      folder.classList.toggle("open",open);
+      setOpen(id,open);
+    });
+  });
 }
 function wireDoneButtons(scope=document){
-  scope.querySelectorAll(".doneTask").forEach(b=>b.addEventListener("click",()=>{
-    const f=state.sheets.find(x=>x.id===b.dataset.id);if(f)markDone(f,Number(b.dataset.i));
-  }));
+  scope.querySelectorAll(".doneTask").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const f=state.sheets.find(x=>x.id===btn.dataset.id);
+      if(!f)return;
+      markDone(f,Number(btn.dataset.i));
+    });
+  });
 }
+function markDone(f,index){
+  const t=todayISO();
+  if(f.lastWorkedDate===t){
+    alert("Cette fiche a déjà été validée aujourd’hui.");
+    return;
+  }
+  f.done=f.done||{};
+  f.completedDates=f.completedDates||{};
+  f.done[index]=true;
+  f.completedDates[index]=t;
+  f.lastWorkedDate=t;
+  save();
+  renderAll();
+}
+
 function renderKpis(){
   kToday.textContent=todayTasks("today").length;
   kLate.textContent=todayTasks("late").length;
@@ -277,292 +482,308 @@ function renderKpis(){
 }
 function showKpiDetail(type){
   kpiDetail.classList.remove("hidden");
-  if(type==="today"){
-    const rows=todayTasks("today");
-    kpiDetail.innerHTML=`<h2>À faire aujourd’hui</h2>${rows.length?rows.map(x=>taskHTML(x,true)).join(""):'<div class="empty">Rien de prévu aujourd’hui.</div>'}`;
-    wireDoneButtons(kpiDetail);
-  }else if(type==="late"){
-    const rows=todayTasks("late");
-    kpiDetail.innerHTML=`<h2>Fiches en retard</h2>${rows.length?rows.map(x=>taskHTML(x,true)).join(""):'<div class="empty">Aucun retard.</div>'}`;
-    wireDoneButtons(kpiDetail);
-  }else{
-    const entries=[];
-    state.sheets.forEach(f=>plan(f).forEach(p=>{if(p.done)entries.push({f,p})}));
-    entries.sort((a,b)=>(b.p.actual||"").localeCompare(a.p.actual||""));
-    kpiDetail.innerHTML=`<h2>Historique des révisions</h2>${entries.length?entries.map(x=>{
-      const actual=x.p.actual;let info=actual?`fait le ${fmt(actual)}`:"date réelle non enregistrée (ancienne version)";
-      if(actual){const delta=daysBetween(x.p.date,actual);if(delta>0)info+=` · ${delta} j après la date prévue`;else if(delta<0)info+=` · ${Math.abs(delta)} j avant`;else info+=" · à la date prévue";}
-      return `<div class="history-entry"><strong>${esc(x.f.ue)} — ${esc(x.f.name)}</strong><div class="history-date">${x.p.label} · prévu le ${fmt(x.p.date)} · ${info}</div></div>`;
-    }).join(""):'<div class="empty">Aucune révision effectuée pour le moment.</div>'}`;
-  }
-}
 
-function earlierPendingBefore(f,date){return plan(f).filter(p=>!p.done&&p.date<date)}
-function renderDay(date){
-  planTitle.textContent=date===todayISO()?"Programme du jour":"Programme du "+fmt(date,true);
-  if(date===todayISO()){
-    const rows=todayTasks("all"),by={};rows.forEach(x=>(by[x.f.ue]??=[]).push(x));
-    const names=Object.keys(by);
-    todayList.innerHTML=names.length?names.map(u=>`<div class="ue"><div class="uehead"><div class="uetitle">${esc(u)}</div><div class="muted">${by[u].length} fiche(s)</div></div>${by[u].map(x=>taskHTML(x,true)).join("")}</div>`).join(""):'<div class="empty">Aucune fiche à revoir aujourd’hui.</div>';
-    wireDoneButtons(todayList);return;
+  if(type==="today"||type==="late"){
+    const rows=todayTasks(type==="today"?"today":"late");
+    const title=type==="today"?"À faire aujourd’hui":"Fiches en retard";
+    kpiDetail.innerHTML=`<h2>${title}</h2>${rows.length?rows.map(x=>itemHTML(x,true)).join(""):'<div class="empty">Aucune fiche.</div>'}`;
+    wireDoneButtons(kpiDetail);
+    return;
   }
-  const groups={};
-  state.sheets.forEach(f=>plan(f).filter(p=>!p.done&&p.date===date).forEach(p=>(groups[f.ue]??=[]).push({f,p})));
-  const names=Object.keys(groups);
-  todayList.innerHTML=names.length?names.map(u=>`<div class="ue"><div class="uehead"><div class="uetitle">${esc(u)}</div><div class="muted">${groups[u].length} fiche(s)</div></div>${groups[u].map(x=>{
-    const older=earlierPendingBefore(x.f,date);
-    return `<div class="item"><div><div class="itemname">${esc(x.f.name)}</div><div class="muted">${x.p.label} · prévu ce jour</div>${older.length?`<div class="warning">⚠ ${older[0].label} est encore non validé (prévu le ${fmt(older[0].date)}).</div>`:""}</div></div>`;
-  }).join("")}</div>`).join(""):'<div class="empty">Aucune fiche prévue pour cette date.</div>';
-}
-function simulatedDays(start,count){
-  const sim=state.sheets.map(f=>({f,done:{...f.done},last:f.lastWorkedDate}));
-  const days=[];
-  for(let d=0;d<count;d++){
-    const date=addDays(start,d),rows=[];
-    sim.forEach(obj=>{
-      if(obj.last===date)return;
-      const ps=obj.f.intervals.map((n,i)=>({i,label:"J+"+n,date:addDays(obj.f.j0,n),done:!!obj.done[i]}));
-      const n=ps.find(x=>!x.done);
-      if(!n||n.date>date)return;
-      rows.push({f:obj.f,n,catchup:n.date<date});
-      obj.done[n.i]=true;obj.last=date;
-    });
-    days.push({date,rows});
-  }
-  return days;
-}
-function loadBadge(n){
-  if(n>=8)return '<span class="badge load-heavy">Chargé</span>';
-  if(n>=4)return '<span class="badge load-medium">Moyen</span>';
-  if(n>0)return '<span class="badge load-light">Léger</span>';
-  return "";
-}
-function render15(start){
-  const days=simulatedDays(start,15),total=days.reduce((n,d)=>n+d.rows.length,0);
-  planTitle.textContent="Planning des 15 prochains jours";
-  let out=`<div class="summaryline">${total} révision(s) prévues sur les 15 jours</div>`;
-  days.forEach(d=>{
-    if(!d.rows.length){out+=`<div class="daycard compact"><div class="row"><div class="daytitle">${fmt(d.date,true)}</div><div class="daycount">Rien de prévu</div></div></div>`;return}
-    const by={};d.rows.forEach(x=>(by[x.f.ue]??=[]).push(x));
-    out+=`<div class="daycard"><div class="row"><div class="daytitle">${fmt(d.date,true)}</div><div class="daycount">${d.rows.length} fiche(s) ${loadBadge(d.rows.length)}</div></div>`;
-    Object.keys(by).forEach(u=>{out+=`<div class="muted" style="margin-top:5px"><strong>${esc(u)}</strong> — ${by[u].map(x=>`${esc(x.f.name)} (${x.n.label}${x.catchup?", rattrapage":""})`).join(", ")}</div>`});
-    out+="</div>";
-  });
-  todayList.innerHTML=out;
-}
-function renderPlanning(){
-  renderKpis();
-  const date=planDate.value||todayISO();
-  mode==="day"?renderDay(date):render15(date);
-}
 
-function renderUEs(){
-  ueList.innerHTML=state.ues.map(u=>{
-    const arr=state.sheets.filter(f=>f.ue===u);
-    return `<div class="ue"><div class="uehead"><div class="uetitle">${esc(u)}</div><div class="muted">${arr.length} fiche(s)</div></div>${arr.length?arr.map(f=>{const n=nextPending(f);return `<div class="item"><div><div class="itemname">${esc(f.name)}</div><div class="muted">J0 : ${fmt(f.j0)} · ${n?`Prochaine : ${n.label} le ${fmt(n.date)}`:"Cycle terminé"}</div><div class="progress"><span style="width:${progress(f)}%"></span></div></div><div class="actions"><button class="btn secondary small editBtn" data-id="${f.id}" type="button">Modifier</button><button class="btn danger small delBtn" data-id="${f.id}" type="button">Supprimer</button></div></div>`}).join(""):'<div class="empty">Aucune fiche pour cette UE.</div>'}</div>`;
-  }).join("");
-  document.querySelectorAll(".delBtn").forEach(b=>b.addEventListener("click",()=>{
-    const f=state.sheets.find(x=>x.id===b.dataset.id);
-    if(f&&confirm(`Supprimer "${f.name}" ?`)){state.sheets=state.sheets.filter(x=>x.id!==f.id);save();renderAll()}
-  }));
-  document.querySelectorAll(".editBtn").forEach(b=>b.addEventListener("click",()=>{
-    const f=state.sheets.find(x=>x.id===b.dataset.id);if(!f)return;
-    const name=prompt("Nom de la fiche :",f.name);if(name===null)return;
-    const j0=prompt("Date J0 (AAAA-MM-JJ) :",f.j0);if(j0===null)return;
-    if(name.trim())f.name=name.trim();
-    if(/^\d{4}-\d{2}-\d{2}$/.test(j0)&&j0!==f.j0){
-      const hasHistory=plan(f).some(p=>p.done);
-      if(hasHistory){
-        const keep=confirm("Cette fiche comporte déjà des révisions effectuées.\n\nOK = conserver l’historique\nAnnuler = recommencer le cycle avec le nouveau J0");
-        if(!keep){
-          const restart=confirm("Confirmer le recommencement du cycle ? Les validations de cette fiche seront effacées.");
-          if(!restart){renderAll();return}
-          f.done={};f.completedDates={};f.lastWorkedDate=null;
-        }
-      }
-      f.j0=j0;
+  const entries=[];
+  state.sheets.forEach(f=>plan(f).forEach(p=>{if(p.done)entries.push({f,p})}));
+  entries.sort((a,b)=>(b.p.actual||"").localeCompare(a.p.actual||""));
+  kpiDetail.innerHTML=`<h2>Historique des révisions</h2>${entries.length?entries.map(x=>{
+    let info=x.p.actual?`fait le ${fmt(x.p.actual)}`:"date réelle non enregistrée";
+    if(x.p.actual){
+      const delta=daysBetween(x.p.date,x.p.actual);
+      if(delta>0)info+=` · ${delta} j après`;
+      else if(delta<0)info+=` · ${Math.abs(delta)} j avant`;
+      else info+=" · à la date prévue";
     }
-    save();renderAll();
-  }));
+    return `<div class="history-entry"><strong>${esc(x.f.ue)} — ${esc(x.f.name)}</strong><div class="history-date">${x.p.label} · prévu le ${fmt(x.p.date)} · ${info}</div></div>`;
+  }).join(""):'<div class="empty">Aucune révision effectuée.</div>'}`;
 }
+
+function refreshUESelect(){
+  sheetUE.innerHTML=state.ues.map(u=>`<option>${esc(u)}</option>`).join("");
+}
+function renderUEs(){
+  ueList.innerHTML=state.ues.map(ue=>{
+    const arr=state.sheets.filter(f=>f.ue===ue);
+    const body=arr.length?arr.map(f=>{
+      const n=nextPending(f);
+      return `<div class="item">
+        <div>
+          <div class="itemname">${esc(f.name)}</div>
+          <div class="itemmeta">J0 : ${fmt(f.j0)} · ${n?`Prochaine : ${n.label} le ${fmt(n.date)}`:"Cycle terminé"}</div>
+          <div class="badges"><span class="progress-mini">${progressCount(f)}/${f.intervals.length}<span class="progress-line"><span style="width:${progressPct(f)}%"></span></span></span></div>
+        </div>
+        <div class="actions">
+          <button class="btn secondary small editBtn" data-id="${f.id}" type="button">Modifier</button>
+          <button class="btn danger small delBtn" data-id="${f.id}" type="button">Supprimer</button>
+        </div>
+      </div>`;
+    }).join(""):'<div class="empty">Aucune fiche pour cette UE.</div>';
+
+    return folderHTML({
+      id:folderId("manageue",ue),
+      title:esc(ue),
+      meta:`${arr.length} fiche${arr.length>1?"s":""}`,
+      color:ueColor(ue),
+      body
+    });
+  }).join("");
+
+  wireFolders();
+
+  document.querySelectorAll(".delBtn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const f=state.sheets.find(x=>x.id===btn.dataset.id);
+      if(f&&confirm(`Supprimer "${f.name}" ?`)){
+        state.sheets=state.sheets.filter(x=>x.id!==f.id);
+        save();
+        renderAll();
+      }
+    });
+  });
+
+  document.querySelectorAll(".editBtn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const f=state.sheets.find(x=>x.id===btn.dataset.id);
+      if(!f)return;
+
+      const newName=prompt("Nom de la fiche :",f.name);
+      if(newName===null)return;
+      const newJ0=prompt("Date J0 (AAAA-MM-JJ) :",f.j0);
+      if(newJ0===null)return;
+
+      if(newName.trim())f.name=newName.trim();
+
+      if(/^\d{4}-\d{2}-\d{2}$/.test(newJ0)&&newJ0!==f.j0){
+        const hasHistory=plan(f).some(p=>p.done);
+        if(hasHistory){
+          const keep=confirm("Cette fiche a déjà des révisions effectuées.\n\nOK = conserver l’historique\nAnnuler = recommencer le cycle");
+          if(!keep){
+            const restart=confirm("Confirmer le recommencement du cycle ? Les validations de cette fiche seront effacées.");
+            if(!restart){renderAll();return}
+            f.done={};
+            f.completedDates={};
+            f.lastWorkedDate=null;
+          }
+        }
+        f.j0=newJ0;
+      }
+
+      save();
+      renderAll();
+    });
+  });
+}
+
 function renderProgress(){
-  progressList.innerHTML=state.ues.map(u=>{
-    const arr=state.sheets.filter(f=>f.ue===u),avg=arr.length?Math.round(arr.reduce((a,f)=>a+progress(f),0)/arr.length):0,complete=arr.filter(f=>!nextPending(f)).length;
-    const revisions=arr.reduce((n,f)=>n+plan(f).filter(p=>p.done).length,0);
-    return `<div class="ue"><div class="row"><strong>${esc(u)}</strong><span class="muted">${arr.length} fiche(s) · ${revisions} révision(s) · ${complete} cycle(s) terminé(s)</span></div><div class="progress"><span style="width:${avg}%"></span></div><div class="muted">${avg}% d’avancement moyen</div></div>`;
+  progressList.innerHTML=state.ues.map(ue=>{
+    const arr=state.sheets.filter(f=>f.ue===ue);
+    const avg=arr.length?Math.round(arr.reduce((a,f)=>a+progressPct(f),0)/arr.length):0;
+    const complete=arr.filter(f=>!nextPending(f)).length;
+    const revisions=arr.reduce((n,f)=>n+progressCount(f),0);
+
+    return `<div class="ue-progress">
+      <div class="row">
+        <strong><span class="dot" style="display:inline-block;background:${ueColor(ue)};margin-right:7px"></span>${esc(ue)}</strong>
+        <span class="muted">${arr.length} fiche${arr.length>1?"s":""} · ${revisions} révision${revisions>1?"s":""} · ${complete} cycle${complete>1?"s":""} terminé${complete>1?"s":""}</span>
+      </div>
+      <div class="progress"><span style="width:${avg}%"></span></div>
+      <div class="muted" style="margin-top:4px">${avg}% d’avancement moyen</div>
+    </div>`;
   }).join("");
 }
+
 function renderIntervals(){
-  intervals.innerHTML=state.intervals.map((n,i)=>`<div class="chip"><span>J+</span><input class="ival" type="number" min="1" max="365" value="${n}"><button class="btn danger small remI" data-i="${i}" type="button">×</button></div>`).join("");
-  document.querySelectorAll(".remI").forEach(b=>b.addEventListener("click",()=>{if(state.intervals.length<=1)return alert("Il faut garder au moins un passage.");state.intervals.splice(Number(b.dataset.i),1);renderIntervals()}));
+  intervals.innerHTML=state.intervals.map((n,i)=>`
+    <div class="chip">
+      <span>J+</span>
+      <input class="ival" type="number" min="1" max="365" value="${n}">
+      <button class="btn danger small remI" data-i="${i}" type="button">×</button>
+    </div>`).join("");
+
+  document.querySelectorAll(".remI").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      if(state.intervals.length<=1){
+        alert("Il faut garder au moins un passage.");
+        return;
+      }
+      state.intervals.splice(Number(btn.dataset.i),1);
+      renderIntervals();
+    });
+  });
 }
+
 function renderBackup(){
   if(state.lastExport){
-    const date=new Date(state.lastExport),diff=Math.floor((Date.now()-date.getTime())/86400000);
-    lastExport.textContent=`Dernière sauvegarde externe : ${date.toLocaleString("fr-FR")} (${diff===0?"aujourd’hui":`il y a ${diff} jour(s)`})`;
-  }else lastExport.textContent="Aucune sauvegarde externe effectuée pour le moment.";
+    const d=new Date(state.lastExport);
+    const diff=Math.floor((Date.now()-d.getTime())/86400000);
+    lastExport.textContent=`Dernière sauvegarde externe : ${d.toLocaleString("fr-FR")} (${diff===0?"aujourd’hui":`il y a ${diff} jour(s)`})`;
+  }else{
+    lastExport.textContent="Aucune sauvegarde externe effectuée pour le moment.";
+  }
   renderBackupReminder();
 }
 function backupDue(){
-  const ref=state.lastExport||state.firstUse;if(!ref)return false;
-  const age=(Date.now()-new Date(ref).getTime())/86400000,snooze=state.backupSnoozeUntil?new Date(state.backupSnoozeUntil).getTime():0;
+  const ref=state.lastExport||state.firstUse;
+  if(!ref)return false;
+  const age=(Date.now()-new Date(ref).getTime())/86400000;
+  const snooze=state.backupSnoozeUntil?new Date(state.backupSnoozeUntil).getTime():0;
   return age>=7&&Date.now()>=snooze;
 }
 function renderBackupReminder(){
-  if(!backupDue()){backupBanner.classList.add("hidden");return}
-  const ref=state.lastExport||state.firstUse,age=Math.floor((Date.now()-new Date(ref).getTime())/86400000);
-  backupBannerText.textContent=state.lastExport?`La dernière sauvegarde externe date d’il y a ${age} jours.`:"Aucune sauvegarde externe n’a encore été effectuée.";
+  if(!backupDue()){
+    backupBanner.classList.add("hidden");
+    return;
+  }
+  const ref=state.lastExport||state.firstUse;
+  const age=Math.floor((Date.now()-new Date(ref).getTime())/86400000);
+  backupBannerText.textContent=state.lastExport
+    ?`La dernière sauvegarde externe date d’il y a ${age} jours.`
+    :"Aucune sauvegarde externe n’a encore été effectuée.";
   backupBanner.classList.remove("hidden");
 }
 function exportBackup(){
-  state.lastExport=new Date().toISOString();state.backupSnoozeUntil=null;save();
-  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);a.download=`sauvegarde_methode_des_J_${todayISO()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);renderBackup();
-}
-function renderAll(){refreshUESelect();renderPlanning();renderUEs();renderProgress();renderIntervals();renderBackup()}
+  state.lastExport=new Date().toISOString();
+  state.backupSnoozeUntil=null;
+  save();
 
-/* ---------- PDF PLANNING 2 SEMAINES ---------- */
-function mondayOfWeek(iso){
-  const [y,m,d]=iso.split("-").map(Number),dt=new Date(Date.UTC(y,m-1,d));
-  const day=dt.getUTCDay(); // 0 dim, 1 lun...
-  const shift=day===0?-6:1-day;
-  dt.setUTCDate(dt.getUTCDate()+shift);
-  return dt.toISOString().slice(0,10);
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`sauvegarde_methode_des_J_${todayISO()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  renderBackup();
 }
-function ueColor(ue){
-  let idx=state.ues.indexOf(ue);
-  if(idx<0){idx=0;for(let i=0;i<ue.length;i++)idx=(idx*31+ue.charCodeAt(i))%UE_COLORS.length}
-  return UE_COLORS[idx%UE_COLORS.length];
-}
-function lighten(rgb,amount=.82){return rgb.map(v=>Math.round(v+(255-v)*amount))}
-function pdfWeekData(start){
-  return simulatedDays(start,7);
-}
-function drawWeekPage(doc,start,pageNo){
-  const days=pdfWeekData(start);
-  const pageW=297,pageH=210,margin=8,headerH=23,gap=2;
-  const colW=(pageW-2*margin-gap*6)/7;
-  const y0=margin+headerH;
-  doc.setFillColor(245,247,250);doc.rect(0,0,pageW,pageH,"F");
-  doc.setTextColor(23,33,43);
-  doc.setFont("helvetica","bold");doc.setFontSize(15);
-  doc.text("Méthode des J — Planning hebdomadaire",margin,12);
-  doc.setFont("helvetica","normal");doc.setFontSize(9);
-  doc.setTextColor(95,105,115);
-  doc.text(`Semaine du ${fmt(start)} au ${fmt(addDays(start,6))}`,margin,18);
-  doc.text(`Page ${pageNo}/2`,pageW-margin,18,{align:"right"});
-  days.forEach((day,di)=>{
-    const x=margin+di*(colW+gap),rgb=[47,111,159];
-    doc.setFillColor(...rgb);doc.roundedRect(x,y0,colW,13,2,2,"F");
-    doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(8.5);
-    const [yy,mm,dd]=day.date.split("-").map(Number);
-    const dn=new Date(Date.UTC(yy,mm-1,dd)).toLocaleDateString("fr-FR",{weekday:"short",day:"2-digit",month:"2-digit",timeZone:"UTC"});
-    doc.text(dn,x+colW/2,y0+5.2,{align:"center"});
-    doc.setFont("helvetica","normal");doc.setFontSize(7);
-    doc.text(`${day.rows.length} révision(s)`,x+colW/2,y0+10,{align:"center"});
-    let y=y0+16;
-    if(!day.rows.length){
-      doc.setTextColor(130,138,145);doc.setFontSize(7.5);doc.text("Rien de prévu",x+2,y+5);
-      return;
-    }
-    for(const row of day.rows){
-      if(y>pageH-22){doc.setTextColor(160,60,60);doc.setFontSize(7);doc.text("… autres fiches",x+2,pageH-12);break}
-      const c=ueColor(row.f.ue),bg=lighten(c,.82);
-      doc.setFillColor(...bg);doc.setDrawColor(...c);doc.roundedRect(x,y,colW,20,1.5,1.5,"FD");
-      doc.setFillColor(...c);doc.rect(x,y,2,20,"F");
-      doc.setTextColor(25,35,45);doc.setFont("helvetica","bold");doc.setFontSize(6.7);
-      let title=row.f.name.length>27?row.f.name.slice(0,25)+"…":row.f.name;
-      doc.text(title,x+3.5,y+5);
-      doc.setFont("helvetica","normal");doc.setFontSize(6);
-      let ue=row.f.ue.length>20?row.f.ue.slice(0,18)+"…":row.f.ue;
-      doc.text(ue,x+3.5,y+9);
-      doc.setFont("helvetica","bold");doc.setFontSize(6.4);
-      doc.setTextColor(row.catchup?180:60,row.catchup?55:70,row.catchup?55:80);
-      doc.text(`${row.n.label}${row.catchup?" · retard":""}`,x+3.5,y+13.3);
-      const pct=progress(row.f);
-      doc.setFillColor(225,230,235);doc.roundedRect(x+3.5,y+15.5,colW-7,2,1,1,"F");
-      doc.setFillColor(...c);doc.roundedRect(x+3.5,y+15.5,(colW-7)*pct/100,2,1,1,"F");
-      doc.setTextColor(80,90,100);doc.setFont("helvetica","normal");doc.setFontSize(5.5);
-      doc.text(`${pct}%`,x+colW-3.5,y+19,{align:"right"});
-      y+=22;
-    }
-  });
-  // légende UE
-  let lx=margin,ly=pageH-7;
-  doc.setFontSize(5.8);
-  state.ues.slice(0,10).forEach(ue=>{
-    const c=ueColor(ue);
-    doc.setFillColor(...c);doc.circle(lx+1.4,ly-1.3,1.4,"F");
-    doc.setTextColor(70,78,86);doc.text(ue,lx+4,ly);
-    lx+=Math.min(31,8+ue.length*1.35);
-    if(lx>pageW-35){lx=margin;ly-=4}
-  });
-}
-async function generatePDF(){
-  if(!window.jspdf||!window.jspdf.jsPDF){
-    alert("Le module PDF n’a pas pu se charger. Vérifie la connexion internet puis réessaie.");
-    return;
-  }
-  pdfBtn.disabled=true;pdfBtn.textContent="Création du PDF…";
-  try{
-    const {jsPDF}=window.jspdf;
-    const doc=new jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true});
-    const monday=mondayOfWeek(todayISO());
-    drawWeekPage(doc,monday,1);
-    doc.addPage("a4","landscape");
-    drawWeekPage(doc,addDays(monday,7),2);
-    doc.save(`planning_methode_des_J_${monday}_au_${addDays(monday,13)}.pdf`);
-  }catch(err){
-    console.error(err);alert("Impossible de générer le PDF.");
-  }finally{
-    pdfBtn.disabled=false;pdfBtn.textContent="PDF planning · 2 semaines";
-  }
+
+function renderAll(){
+  refreshUESelect();
+  renderPlanning();
+  renderUEs();
+  renderProgress();
+  renderIntervals();
+  renderBackup();
 }
 
 dateLabel.textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-sheetJ0.value=todayISO();planDate.value=todayISO();
+sheetJ0.value=todayISO();
 
-document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
-  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));
-  ["today","ues","progress","settings"].forEach(n=>document.getElementById("view-"+n).classList.toggle("hidden",n!==b.dataset.tab));
-}));
-document.querySelectorAll(".subtab").forEach(b=>b.addEventListener("click",()=>{
-  mode=b.dataset.mode;planDate.value=todayISO();
-  document.querySelectorAll(".subtab").forEach(x=>x.classList.toggle("active",x===b));
-  kpiDetail.classList.add("hidden");renderPlanning();
-}));
-planDate.addEventListener("change",()=>{kpiDetail.classList.add("hidden");renderPlanning()});
-todayBtn.addEventListener("click",()=>{planDate.value=todayISO();mode="day";document.querySelectorAll(".subtab").forEach(x=>x.classList.toggle("active",x.dataset.mode==="day"));renderPlanning()});
-pdfBtn.addEventListener("click",generatePDF);
+document.querySelectorAll(".tab").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===btn));
+    ["planning","ues","progress","settings"].forEach(name=>{
+      document.getElementById("view-"+name).classList.toggle("hidden",name!==btn.dataset.tab);
+    });
+  });
+});
+
+document.querySelectorAll(".subtab").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    mode=btn.dataset.mode;
+    document.querySelectorAll(".subtab").forEach(x=>x.classList.toggle("active",x===btn));
+    kpiDetail.classList.add("hidden");
+    renderPlanning();
+  });
+});
+
+expandAllBtn.addEventListener("click",()=>{
+  expandAll=true;
+  planningContent.querySelectorAll(".folder").forEach(f=>{
+    f.classList.add("open");
+    setOpen(f.dataset.folder,true);
+  });
+});
+collapseAllBtn.addEventListener("click",()=>{
+  expandAll=false;
+  planningContent.querySelectorAll(".folder").forEach(f=>{
+    f.classList.remove("open");
+    setOpen(f.dataset.folder,false);
+  });
+});
+
 kpiTodayBtn.addEventListener("click",()=>showKpiDetail("today"));
 kpiLateBtn.addEventListener("click",()=>showKpiDetail("late"));
 kpiDoneBtn.addEventListener("click",()=>showKpiDetail("done"));
 
 sheetForm.addEventListener("submit",e=>{
   e.preventDefault();
-  state.sheets.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),ue:sheetUE.value,name:sheetName.value.trim(),j0:sheetJ0.value,intervals:[...state.intervals],done:{},completedDates:{},lastWorkedDate:null});
-  save();sheetName.value="";sheetJ0.value=todayISO();renderAll();
+  state.sheets.push({
+    id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),
+    ue:sheetUE.value,
+    name:sheetName.value.trim(),
+    j0:sheetJ0.value,
+    intervals:[...state.intervals],
+    done:{},
+    completedDates:{},
+    lastWorkedDate:null
+  });
+  save();
+  sheetName.value="";
+  sheetJ0.value=todayISO();
+  renderAll();
 });
+
 addUE.addEventListener("click",()=>{
-  const n=prompt("Nom de la nouvelle UE :");if(!n||!n.trim())return;
-  const c=n.trim();if(state.ues.some(x=>x.toLowerCase()===c.toLowerCase()))return alert("Cette UE existe déjà.");
-  state.ues.push(c);save();renderAll();
+  const n=prompt("Nom de la nouvelle UE :");
+  if(!n||!n.trim())return;
+  const clean=n.trim();
+  if(state.ues.some(x=>x.toLowerCase()===clean.toLowerCase())){
+    alert("Cette UE existe déjà.");
+    return;
+  }
+  state.ues.push(clean);
+  save();
+  renderAll();
 });
-addInterval.addEventListener("click",()=>{state.intervals.push((state.intervals.at(-1)||1)+7);renderIntervals()});
+
+addInterval.addEventListener("click",()=>{
+  state.intervals.push((state.intervals.at(-1)||1)+7);
+  renderIntervals();
+});
+
 saveIntervals.addEventListener("click",()=>{
-  const v=[...document.querySelectorAll(".ival")].map(x=>Number(x.value)).filter(x=>Number.isFinite(x)&&x>0&&x<=365).sort((a,b)=>a-b);
-  state.intervals=[...new Set(v)];save();renderAll();alert("Nouveau rythme enregistré pour les prochaines fiches.");
+  const vals=[...document.querySelectorAll(".ival")]
+    .map(x=>Number(x.value))
+    .filter(x=>Number.isFinite(x)&&x>0&&x<=365)
+    .sort((a,b)=>a-b);
+  state.intervals=[...new Set(vals)];
+  save();
+  renderAll();
+  alert("Nouveau rythme enregistré pour les prochaines fiches.");
 });
+
 exportBtn.addEventListener("click",exportBackup);
 backupNowBtn.addEventListener("click",exportBackup);
-backupLaterBtn.addEventListener("click",()=>{state.backupSnoozeUntil=new Date(Date.now()+24*60*60*1000).toISOString();save();renderBackupReminder()});
+backupLaterBtn.addEventListener("click",()=>{
+  state.backupSnoozeUntil=new Date(Date.now()+24*60*60*1000).toISOString();
+  save();
+  renderBackupReminder();
+});
+
 importInput.addEventListener("change",async e=>{
-  const f=e.target.files?.[0];if(!f)return;
+  const f=e.target.files?.[0];
+  if(!f)return;
   try{
     const x=JSON.parse(await f.text());
     if(!Array.isArray(x.ues)||!Array.isArray(x.intervals)||!Array.isArray(x.sheets))throw 0;
-    if(confirm("Remplacer les données actuelles par cette sauvegarde ?")){state=migrate(x);save();renderAll();alert("Sauvegarde restaurée.")}
-  }catch(_){alert("Fichier de sauvegarde invalide.")}
+    if(confirm("Remplacer les données actuelles par cette sauvegarde ?")){
+      state=migrate(x);
+      save();
+      renderAll();
+      alert("Sauvegarde restaurée.");
+    }
+  }catch(_){
+    alert("Fichier de sauvegarde invalide.");
+  }
   e.target.value="";
 });
 
