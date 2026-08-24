@@ -705,7 +705,7 @@ function renderUEs(){
   });
 
   document.querySelectorAll(".editBtn").forEach(btn=>{
-    btn.addEventListener("click",()=>{
+    btn.addEventListener("click",async ()=>{
       const f=state.sheets.find(x=>x.id===btn.dataset.id);
       if(!f)return;
 
