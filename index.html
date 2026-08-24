@@ -28,7 +28,6 @@ h1{margin:0;font-size:1.7rem}
 .card h2{margin:0 0 12px;font-size:1.15rem}
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .kpi{border:0;background:var(--soft);padding:14px;border-radius:14px;text-align:center;color:var(--text)}
-.kpi:hover{filter:brightness(.985)}
 .kpi b{display:block;font-size:1.55rem;color:var(--a)}
 .kpi .hint{font-size:.78rem;color:var(--muted);margin-top:3px}
 .formgrid{display:grid;grid-template-columns:1.1fr 2fr 170px auto;gap:10px}
@@ -47,7 +46,6 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
 .badge.late{background:var(--rsoft);color:var(--red)}
 .badge.today{background:var(--wsoft);color:var(--warn)}
 .badge.done{background:var(--gsoft);color:var(--green)}
-.badge.info{background:var(--soft);color:var(--a)}
 .progress{height:10px;background:#e8edf2;border-radius:999px;overflow:hidden;margin-top:8px}
 .progress span{display:block;height:100%;background:var(--a)}
 .actions,.intervals,.subtabs,.datebar{display:flex;gap:8px;flex-wrap:wrap}
@@ -67,18 +65,20 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
 .warning{background:var(--wsoft);color:var(--warn);border-radius:10px;padding:8px 10px;margin-top:7px;font-size:.86rem}
 .backup-banner{background:var(--wsoft);border:1px solid #ecd889;border-radius:14px;padding:12px 14px;margin-bottom:14px}
 .backup-banner strong{display:block;margin-bottom:4px}
-.detail-panel{border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
 .history-entry{border-top:1px solid var(--line);padding:10px 0}
 .history-entry:first-child{border-top:0}
 .history-date{font-size:.87rem;color:var(--muted)}
 .load-light{background:var(--gsoft);color:var(--green)}
 .load-medium{background:var(--wsoft);color:var(--warn)}
 .load-heavy{background:var(--rsoft);color:var(--red)}
+.pdf-row{display:flex;justify-content:flex-end;margin-top:10px}
 @media(max-width:760px){
   .tabs{grid-template-columns:repeat(2,1fr)}
   .kpis{grid-template-columns:1fr}
   .formgrid{grid-template-columns:1fr}
   .item{grid-template-columns:1fr}
+  .pdf-row{justify-content:stretch}
+  .pdf-row .btn{width:100%}
 }
 </style>
 </head>
@@ -122,8 +122,11 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
       <div class="subtabs">
         <button class="subtab active" data-mode="day" type="button">Journée</button>
         <button class="subtab" data-mode="15" type="button">15 prochains jours</button>
-        <button id="pdfWeekBtn" class="btn secondary" type="button">PDF semaine</button>
       </div>
+      <div class="pdf-row">
+        <button id="pdfBtn" class="btn primary" type="button">PDF planning · 2 semaines</button>
+      </div>
+      <p class="note" style="margin:9px 0 0">Le PDF commence au lundi de la semaine actuelle et couvre deux semaines complètes.</p>
     </div>
 
     <div class="card">
@@ -175,10 +178,16 @@ input,select{width:100%;border:1px solid #bfcbd6;border-radius:11px;padding:11px
   </section>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script>
 (function(){
 const DEFAULT_UES=["Bio cellulaire","Biochimie","Biophysique","Biostat","Chimie","Embryo-Histo","Physique"];
 const KEY="methodeJ_ipad_v1";
+const UE_COLORS=[
+  [79,129,189],[155,187,89],[128,100,162],[75,172,198],
+  [247,150,70],[192,80,77],[119,146,60],[128,128,128],
+  [146,208,80],[44,77,117],[255,192,0],[112,48,160]
+];
 let state=load();
 let mode="day";
 
@@ -226,19 +235,11 @@ function fmt(iso,long=false){
     ?{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}
     :{day:"2-digit",month:"2-digit",year:"numeric",timeZone:"UTC"});
 }
-function esc(x){
-  return String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
-}
-function plan(f){
-  return f.intervals.map((n,i)=>({i,label:"J+"+n,date:addDays(f.j0,n),done:!!f.done?.[i],actual:f.completedDates?.[i]||null}));
-}
+function esc(x){return String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function plan(f){return f.intervals.map((n,i)=>({i,label:"J+"+n,date:addDays(f.j0,n),done:!!f.done?.[i],actual:f.completedDates?.[i]||null}))}
 function nextPending(f){return plan(f).find(x=>!x.done)||null}
-function progress(f){
-  return f.intervals.length?Math.round(plan(f).filter(x=>x.done).length/f.intervals.length*100):0;
-}
-function completedCount(){
-  return state.sheets.reduce((n,f)=>n+plan(f).filter(x=>x.done).length,0);
-}
+function progress(f){return f.intervals.length?Math.round(plan(f).filter(x=>x.done).length/f.intervals.length*100):0}
+function completedCount(){return state.sheets.reduce((n,f)=>n+plan(f).filter(x=>x.done).length,0)}
 function refreshUESelect(){sheetUE.innerHTML=state.ues.map(u=>`<option>${esc(u)}</option>`).join("")}
 
 function todayTasks(kind="all"){
@@ -248,39 +249,31 @@ function todayTasks(kind="all"){
     const n=nextPending(f);
     if(!n||n.date>t)return;
     const late=n.date<t;
-    if(kind==="today"&&!(!late))return;
+    if(kind==="today"&&late)return;
     if(kind==="late"&&!late)return;
     rows.push({f,n,late});
   });
   return rows.sort((a,b)=>a.n.date.localeCompare(b.n.date)||a.f.ue.localeCompare(b.f.ue));
 }
-
 function markDone(f,index){
   const t=todayISO();
   if(f.lastWorkedDate===t){alert("Cette fiche a déjà été validée aujourd’hui.");return}
   f.done=f.done||{};f.completedDates=f.completedDates||{};
-  f.done[index]=true;f.completedDates[index]=t;f.lastWorkedDate=t;
-  save();renderAll();
+  f.done[index]=true;f.completedDates[index]=t;f.lastWorkedDate=t;save();renderAll();
 }
-
 function taskHTML(x,button=true){
   const delay=Math.max(0,daysBetween(x.n.date,todayISO()));
-  return `<div class="item">
-    <div><div class="itemname">${esc(x.f.name)}</div>
-    <div class="muted">${esc(x.f.ue)} · ${x.n.label} · prévu le ${fmt(x.n.date)}
-    ${x.late?`<span class="badge late">${delay} j de retard</span>`:'<span class="badge today">Aujourd’hui</span>'}</div></div>
-    ${button?`<button class="btn primary small doneTask" data-id="${x.f.id}" data-i="${x.n.i}" type="button">Fait</button>`:""}
-  </div>`;
+  return `<div class="item"><div><div class="itemname">${esc(x.f.name)}</div><div class="muted">${esc(x.f.ue)} · ${x.n.label} · prévu le ${fmt(x.n.date)} ${x.late?`<span class="badge late">${delay} j de retard</span>`:'<span class="badge today">Aujourd’hui</span>'}</div></div>${button?`<button class="btn primary small doneTask" data-id="${x.f.id}" data-i="${x.n.i}" type="button">Fait</button>`:""}</div>`;
 }
 function wireDoneButtons(scope=document){
   scope.querySelectorAll(".doneTask").forEach(b=>b.addEventListener("click",()=>{
     const f=state.sheets.find(x=>x.id===b.dataset.id);if(f)markDone(f,Number(b.dataset.i));
   }));
 }
-
 function renderKpis(){
-  const todays=todayTasks("today"),lates=todayTasks("late");
-  kToday.textContent=todays.length;kLate.textContent=lates.length;kDone.textContent=completedCount();
+  kToday.textContent=todayTasks("today").length;
+  kLate.textContent=todayTasks("late").length;
+  kDone.textContent=completedCount();
 }
 function showKpiDetail(type){
   kpiDetail.classList.remove("hidden");
@@ -297,50 +290,34 @@ function showKpiDetail(type){
     state.sheets.forEach(f=>plan(f).forEach(p=>{if(p.done)entries.push({f,p})}));
     entries.sort((a,b)=>(b.p.actual||"").localeCompare(a.p.actual||""));
     kpiDetail.innerHTML=`<h2>Historique des révisions</h2>${entries.length?entries.map(x=>{
-      const actual=x.p.actual;
-      let info=actual?`fait le ${fmt(actual)}`:"date réelle non enregistrée (ancienne version)";
-      if(actual){
-        const delta=daysBetween(x.p.date,actual);
-        if(delta>0)info+=` · ${delta} j après la date prévue`;
-        else if(delta<0)info+=` · ${Math.abs(delta)} j avant`;
-        else info+=" · à la date prévue";
-      }
+      const actual=x.p.actual;let info=actual?`fait le ${fmt(actual)}`:"date réelle non enregistrée (ancienne version)";
+      if(actual){const delta=daysBetween(x.p.date,actual);if(delta>0)info+=` · ${delta} j après la date prévue`;else if(delta<0)info+=` · ${Math.abs(delta)} j avant`;else info+=" · à la date prévue";}
       return `<div class="history-entry"><strong>${esc(x.f.ue)} — ${esc(x.f.name)}</strong><div class="history-date">${x.p.label} · prévu le ${fmt(x.p.date)} · ${info}</div></div>`;
     }).join(""):'<div class="empty">Aucune révision effectuée pour le moment.</div>'}`;
   }
 }
 
-function earlierPendingBefore(f,date){
-  return plan(f).filter(p=>!p.done&&p.date<date);
-}
+function earlierPendingBefore(f,date){return plan(f).filter(p=>!p.done&&p.date<date)}
 function renderDay(date){
   planTitle.textContent=date===todayISO()?"Programme du jour":"Programme du "+fmt(date,true);
-  const groups={};
-  state.sheets.forEach(f=>{
-    const entries=plan(f).filter(p=>!p.done&&p.date===date);
-    entries.forEach(p=>(groups[f.ue]??=[]).push({f,p}));
-  });
-
   if(date===todayISO()){
-    // Le vrai programme du jour inclut les retards à rattraper (une seule étape par fiche).
-    const rows=todayTasks("all"),by={};
-    rows.forEach(x=>(by[x.f.ue]??=[]).push(x));
+    const rows=todayTasks("all"),by={};rows.forEach(x=>(by[x.f.ue]??=[]).push(x));
     const names=Object.keys(by);
     todayList.innerHTML=names.length?names.map(u=>`<div class="ue"><div class="uehead"><div class="uetitle">${esc(u)}</div><div class="muted">${by[u].length} fiche(s)</div></div>${by[u].map(x=>taskHTML(x,true)).join("")}</div>`).join(""):'<div class="empty">Aucune fiche à revoir aujourd’hui.</div>';
     wireDoneButtons(todayList);return;
   }
-
+  const groups={};
+  state.sheets.forEach(f=>plan(f).filter(p=>!p.done&&p.date===date).forEach(p=>(groups[f.ue]??=[]).push({f,p})));
   const names=Object.keys(groups);
   todayList.innerHTML=names.length?names.map(u=>`<div class="ue"><div class="uehead"><div class="uetitle">${esc(u)}</div><div class="muted">${groups[u].length} fiche(s)</div></div>${groups[u].map(x=>{
     const older=earlierPendingBefore(x.f,date);
     return `<div class="item"><div><div class="itemname">${esc(x.f.name)}</div><div class="muted">${x.p.label} · prévu ce jour</div>${older.length?`<div class="warning">⚠ ${older[0].label} est encore non validé (prévu le ${fmt(older[0].date)}).</div>`:""}</div></div>`;
   }).join("")}</div>`).join(""):'<div class="empty">Aucune fiche prévue pour cette date.</div>';
 }
-
-function simulated15(start){
+function simulatedDays(start,count){
   const sim=state.sheets.map(f=>({f,done:{...f.done},last:f.lastWorkedDate}));
   const days=[];
-  for(let d=0;d<15;d++){
+  for(let d=0;d<count;d++){
     const date=addDays(start,d),rows=[];
     sim.forEach(obj=>{
       if(obj.last===date)return;
@@ -348,7 +325,6 @@ function simulated15(start){
       const n=ps.find(x=>!x.done);
       if(!n||n.date>date)return;
       rows.push({f:obj.f,n,catchup:n.date<date});
-      // Simulation: si on prévoit qu'elle le fasse ce jour, une seule étape avance.
       obj.done[n.i]=true;obj.last=date;
     });
     days.push({date,rows});
@@ -362,50 +338,17 @@ function loadBadge(n){
   return "";
 }
 function render15(start){
-  const days=simulated15(start),total=days.reduce((n,d)=>n+d.rows.length,0);
+  const days=simulatedDays(start,15),total=days.reduce((n,d)=>n+d.rows.length,0);
   planTitle.textContent="Planning des 15 prochains jours";
   let out=`<div class="summaryline">${total} révision(s) prévues sur les 15 jours</div>`;
   days.forEach(d=>{
-    if(!d.rows.length){
-      out+=`<div class="daycard compact"><div class="row"><div class="daytitle">${fmt(d.date,true)}</div><div class="daycount">Rien de prévu</div></div></div>`;
-      return;
-    }
+    if(!d.rows.length){out+=`<div class="daycard compact"><div class="row"><div class="daytitle">${fmt(d.date,true)}</div><div class="daycount">Rien de prévu</div></div></div>`;return}
     const by={};d.rows.forEach(x=>(by[x.f.ue]??=[]).push(x));
     out+=`<div class="daycard"><div class="row"><div class="daytitle">${fmt(d.date,true)}</div><div class="daycount">${d.rows.length} fiche(s) ${loadBadge(d.rows.length)}</div></div>`;
-    Object.keys(by).forEach(u=>{
-      out+=`<div class="muted" style="margin-top:5px"><strong>${esc(u)}</strong> — ${by[u].map(x=>`${esc(x.f.name)} (${x.n.label}${x.catchup?", rattrapage":""})`).join(", ")}</div>`;
-    });
+    Object.keys(by).forEach(u=>{out+=`<div class="muted" style="margin-top:5px"><strong>${esc(u)}</strong> — ${by[u].map(x=>`${esc(x.f.name)} (${x.n.label}${x.catchup?", rattrapage":""})`).join(", ")}</div>`});
     out+="</div>";
   });
   todayList.innerHTML=out;
-}
-function ueColor(ue){
-  const palette=["#dceef8","#e9e2f6","#dff1e5","#fff0d7","#fde3e5","#e3edf9","#f1e4d8","#e7f0dc","#f5e4ef","#e5e8f5"];
-  let h=0;for(let i=0;i<ue.length;i++)h=(h*31+ue.charCodeAt(i))>>>0;
-  return palette[h%palette.length];
-}
-function escapeDoc(x){return String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
-function exportWeekPDF(){
-  const start=todayISO();
-  const days=simulated15(start).slice(0,7);
-  const total=days.reduce((n,d)=>n+d.rows.length,0);
-  const ueLegend=[...new Set(days.flatMap(d=>d.rows.map(x=>x.f.ue)))];
-  const dayCols=days.map(d=>{
-    const cards=d.rows.length?d.rows.map(x=>{
-      const pct=progress(x.f);
-      const color=ueColor(x.f.ue);
-      return `<div class="task" style="background:${color}"><div class="ueName">${escapeDoc(x.f.ue)}</div><div class="sheetName">${escapeDoc(x.f.name)}</div><div class="taskMeta">${x.n.label}${x.catchup?' · rattrapage':''}</div><div class="bar"><span style="width:${pct}%"></span></div><div class="pct">${pct}% du cycle</div></div>`;
-    }).join(''):'<div class="none">Rien de prévu</div>';
-    return `<section class="day"><header>${escapeDoc(fmt(d.date,true))}<small>${d.rows.length} fiche(s)</small></header>${cards}</section>`;
-  }).join('');
-  const legend=ueLegend.map(u=>`<span class="legendItem"><i style="background:${ueColor(u)}"></i>${escapeDoc(u)}</span>`).join('');
-  const w=window.open('','_blank');
-  if(!w){alert('Le navigateur a bloqué la fenêtre du PDF. Autorise les fenêtres surgissantes puis réessaie.');return;}
-  w.document.open();
-  w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Planning 7 jours</title><style>
-  @page{size:A4 landscape;margin:9mm}*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;color:#17212b;background:#fff}h1{font-size:20px;margin:0}.top{display:flex;justify-content:space-between;align-items:end;margin-bottom:10px}.sub{font-size:11px;color:#64748b;margin-top:3px}.total{font-weight:700;font-size:12px}.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.day{border:1px solid #d8e0e8;border-radius:8px;overflow:hidden;min-width:0}.day header{padding:7px;background:#f3f6f9;font-size:10px;font-weight:800;text-transform:capitalize;line-height:1.25}.day header small{display:block;font-size:9px;color:#64748b;font-weight:600;margin-top:2px}.task{margin:5px;padding:6px;border-radius:6px;break-inside:avoid}.ueName{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}.sheetName{font-size:9px;font-weight:750;margin-top:2px;overflow-wrap:anywhere}.taskMeta,.pct{font-size:7.5px;color:#536170;margin-top:2px}.bar{height:3px;background:rgba(255,255,255,.7);border-radius:9px;overflow:hidden;margin-top:4px}.bar span{display:block;height:100%;background:#345d7d}.none{padding:12px 5px;font-size:9px;color:#8a96a3;text-align:center}.legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px;font-size:8px}.legendItem{display:flex;align-items:center;gap:3px}.legendItem i{width:9px;height:9px;border-radius:2px;border:1px solid #ccd4dc}.footer{margin-top:7px;font-size:7.5px;color:#7a8794;text-align:right}@media print{button{display:none}}
-  </style></head><body><div class="top"><div><h1>Planning des 7 prochains jours</h1><div class="sub">Du ${escapeDoc(fmt(start,true))} au ${escapeDoc(fmt(addDays(start,6),true))}</div></div><div class="total">${total} révision(s) prévues</div></div><main class="week">${dayCols}</main><div class="legend">${legend}</div><div class="footer">Méthode des J · généré le ${escapeDoc(fmt(todayISO(),true))}</div><script>setTimeout(()=>window.print(),350)<\/script></body></html>`);
-  w.document.close();
 }
 function renderPlanning(){
   renderKpis();
@@ -416,15 +359,12 @@ function renderPlanning(){
 function renderUEs(){
   ueList.innerHTML=state.ues.map(u=>{
     const arr=state.sheets.filter(f=>f.ue===u);
-    return `<div class="ue"><div class="uehead"><div class="uetitle">${esc(u)}</div><div class="muted">${arr.length} fiche(s)</div></div>
-    ${arr.length?arr.map(f=>{const n=nextPending(f);return `<div class="item"><div><div class="itemname">${esc(f.name)}</div><div class="muted">J0 : ${fmt(f.j0)} · ${n?`Prochaine : ${n.label} le ${fmt(n.date)}`:"Cycle terminé"}</div><div class="progress"><span style="width:${progress(f)}%"></span></div></div><div class="actions"><button class="btn secondary small editBtn" data-id="${f.id}" type="button">Modifier</button><button class="btn danger small delBtn" data-id="${f.id}" type="button">Supprimer</button></div></div>`}).join(""):'<div class="empty">Aucune fiche pour cette UE.</div>'}</div>`;
+    return `<div class="ue"><div class="uehead"><div class="uetitle">${esc(u)}</div><div class="muted">${arr.length} fiche(s)</div></div>${arr.length?arr.map(f=>{const n=nextPending(f);return `<div class="item"><div><div class="itemname">${esc(f.name)}</div><div class="muted">J0 : ${fmt(f.j0)} · ${n?`Prochaine : ${n.label} le ${fmt(n.date)}`:"Cycle terminé"}</div><div class="progress"><span style="width:${progress(f)}%"></span></div></div><div class="actions"><button class="btn secondary small editBtn" data-id="${f.id}" type="button">Modifier</button><button class="btn danger small delBtn" data-id="${f.id}" type="button">Supprimer</button></div></div>`}).join(""):'<div class="empty">Aucune fiche pour cette UE.</div>'}</div>`;
   }).join("");
-
   document.querySelectorAll(".delBtn").forEach(b=>b.addEventListener("click",()=>{
     const f=state.sheets.find(x=>x.id===b.dataset.id);
     if(f&&confirm(`Supprimer "${f.name}" ?`)){state.sheets=state.sheets.filter(x=>x.id!==f.id);save();renderAll()}
   }));
-
   document.querySelectorAll(".editBtn").forEach(b=>b.addEventListener("click",()=>{
     const f=state.sheets.find(x=>x.id===b.dataset.id);if(!f)return;
     const name=prompt("Nom de la fiche :",f.name);if(name===null)return;
@@ -445,7 +385,6 @@ function renderUEs(){
     save();renderAll();
   }));
 }
-
 function renderProgress(){
   progressList.innerHTML=state.ues.map(u=>{
     const arr=state.sheets.filter(f=>f.ue===u),avg=arr.length?Math.round(arr.reduce((a,f)=>a+progress(f),0)/arr.length):0,complete=arr.filter(f=>!nextPending(f)).length;
@@ -455,42 +394,129 @@ function renderProgress(){
 }
 function renderIntervals(){
   intervals.innerHTML=state.intervals.map((n,i)=>`<div class="chip"><span>J+</span><input class="ival" type="number" min="1" max="365" value="${n}"><button class="btn danger small remI" data-i="${i}" type="button">×</button></div>`).join("");
-  document.querySelectorAll(".remI").forEach(b=>b.addEventListener("click",()=>{
-    if(state.intervals.length<=1)return alert("Il faut garder au moins un passage.");
-    state.intervals.splice(Number(b.dataset.i),1);renderIntervals();
-  }));
+  document.querySelectorAll(".remI").forEach(b=>b.addEventListener("click",()=>{if(state.intervals.length<=1)return alert("Il faut garder au moins un passage.");state.intervals.splice(Number(b.dataset.i),1);renderIntervals()}));
 }
 function renderBackup(){
   if(state.lastExport){
-    const date=new Date(state.lastExport);
-    const diff=Math.floor((Date.now()-date.getTime())/86400000);
+    const date=new Date(state.lastExport),diff=Math.floor((Date.now()-date.getTime())/86400000);
     lastExport.textContent=`Dernière sauvegarde externe : ${date.toLocaleString("fr-FR")} (${diff===0?"aujourd’hui":`il y a ${diff} jour(s)`})`;
   }else lastExport.textContent="Aucune sauvegarde externe effectuée pour le moment.";
   renderBackupReminder();
 }
 function backupDue(){
-  const ref=state.lastExport||state.firstUse;
-  if(!ref)return false;
-  const age=(Date.now()-new Date(ref).getTime())/86400000;
-  const snooze=state.backupSnoozeUntil?new Date(state.backupSnoozeUntil).getTime():0;
-  return age>=7 && Date.now()>=snooze;
+  const ref=state.lastExport||state.firstUse;if(!ref)return false;
+  const age=(Date.now()-new Date(ref).getTime())/86400000,snooze=state.backupSnoozeUntil?new Date(state.backupSnoozeUntil).getTime():0;
+  return age>=7&&Date.now()>=snooze;
 }
 function renderBackupReminder(){
   if(!backupDue()){backupBanner.classList.add("hidden");return}
-  const ref=state.lastExport||state.firstUse;
-  const age=Math.floor((Date.now()-new Date(ref).getTime())/86400000);
+  const ref=state.lastExport||state.firstUse,age=Math.floor((Date.now()-new Date(ref).getTime())/86400000);
   backupBannerText.textContent=state.lastExport?`La dernière sauvegarde externe date d’il y a ${age} jours.`:"Aucune sauvegarde externe n’a encore été effectuée.";
   backupBanner.classList.remove("hidden");
 }
 function exportBackup(){
   state.lastExport=new Date().toISOString();state.backupSnoozeUntil=null;save();
   const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);a.download=`sauvegarde_methode_des_J_${todayISO()}.json`;
-  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-  renderBackup();
+  a.href=URL.createObjectURL(blob);a.download=`sauvegarde_methode_des_J_${todayISO()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);renderBackup();
 }
-function renderAll(){
-  refreshUESelect();renderPlanning();renderUEs();renderProgress();renderIntervals();renderBackup();
+function renderAll(){refreshUESelect();renderPlanning();renderUEs();renderProgress();renderIntervals();renderBackup()}
+
+/* ---------- PDF PLANNING 2 SEMAINES ---------- */
+function mondayOfWeek(iso){
+  const [y,m,d]=iso.split("-").map(Number),dt=new Date(Date.UTC(y,m-1,d));
+  const day=dt.getUTCDay(); // 0 dim, 1 lun...
+  const shift=day===0?-6:1-day;
+  dt.setUTCDate(dt.getUTCDate()+shift);
+  return dt.toISOString().slice(0,10);
+}
+function ueColor(ue){
+  let idx=state.ues.indexOf(ue);
+  if(idx<0){idx=0;for(let i=0;i<ue.length;i++)idx=(idx*31+ue.charCodeAt(i))%UE_COLORS.length}
+  return UE_COLORS[idx%UE_COLORS.length];
+}
+function lighten(rgb,amount=.82){return rgb.map(v=>Math.round(v+(255-v)*amount))}
+function pdfWeekData(start){
+  return simulatedDays(start,7);
+}
+function drawWeekPage(doc,start,pageNo){
+  const days=pdfWeekData(start);
+  const pageW=297,pageH=210,margin=8,headerH=23,gap=2;
+  const colW=(pageW-2*margin-gap*6)/7;
+  const y0=margin+headerH;
+  doc.setFillColor(245,247,250);doc.rect(0,0,pageW,pageH,"F");
+  doc.setTextColor(23,33,43);
+  doc.setFont("helvetica","bold");doc.setFontSize(15);
+  doc.text("Méthode des J — Planning hebdomadaire",margin,12);
+  doc.setFont("helvetica","normal");doc.setFontSize(9);
+  doc.setTextColor(95,105,115);
+  doc.text(`Semaine du ${fmt(start)} au ${fmt(addDays(start,6))}`,margin,18);
+  doc.text(`Page ${pageNo}/2`,pageW-margin,18,{align:"right"});
+  days.forEach((day,di)=>{
+    const x=margin+di*(colW+gap),rgb=[47,111,159];
+    doc.setFillColor(...rgb);doc.roundedRect(x,y0,colW,13,2,2,"F");
+    doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(8.5);
+    const [yy,mm,dd]=day.date.split("-").map(Number);
+    const dn=new Date(Date.UTC(yy,mm-1,dd)).toLocaleDateString("fr-FR",{weekday:"short",day:"2-digit",month:"2-digit",timeZone:"UTC"});
+    doc.text(dn,x+colW/2,y0+5.2,{align:"center"});
+    doc.setFont("helvetica","normal");doc.setFontSize(7);
+    doc.text(`${day.rows.length} révision(s)`,x+colW/2,y0+10,{align:"center"});
+    let y=y0+16;
+    if(!day.rows.length){
+      doc.setTextColor(130,138,145);doc.setFontSize(7.5);doc.text("Rien de prévu",x+2,y+5);
+      return;
+    }
+    for(const row of day.rows){
+      if(y>pageH-22){doc.setTextColor(160,60,60);doc.setFontSize(7);doc.text("… autres fiches",x+2,pageH-12);break}
+      const c=ueColor(row.f.ue),bg=lighten(c,.82);
+      doc.setFillColor(...bg);doc.setDrawColor(...c);doc.roundedRect(x,y,colW,20,1.5,1.5,"FD");
+      doc.setFillColor(...c);doc.rect(x,y,2,20,"F");
+      doc.setTextColor(25,35,45);doc.setFont("helvetica","bold");doc.setFontSize(6.7);
+      let title=row.f.name.length>27?row.f.name.slice(0,25)+"…":row.f.name;
+      doc.text(title,x+3.5,y+5);
+      doc.setFont("helvetica","normal");doc.setFontSize(6);
+      let ue=row.f.ue.length>20?row.f.ue.slice(0,18)+"…":row.f.ue;
+      doc.text(ue,x+3.5,y+9);
+      doc.setFont("helvetica","bold");doc.setFontSize(6.4);
+      doc.setTextColor(row.catchup?180:60,row.catchup?55:70,row.catchup?55:80);
+      doc.text(`${row.n.label}${row.catchup?" · retard":""}`,x+3.5,y+13.3);
+      const pct=progress(row.f);
+      doc.setFillColor(225,230,235);doc.roundedRect(x+3.5,y+15.5,colW-7,2,1,1,"F");
+      doc.setFillColor(...c);doc.roundedRect(x+3.5,y+15.5,(colW-7)*pct/100,2,1,1,"F");
+      doc.setTextColor(80,90,100);doc.setFont("helvetica","normal");doc.setFontSize(5.5);
+      doc.text(`${pct}%`,x+colW-3.5,y+19,{align:"right"});
+      y+=22;
+    }
+  });
+  // légende UE
+  let lx=margin,ly=pageH-7;
+  doc.setFontSize(5.8);
+  state.ues.slice(0,10).forEach(ue=>{
+    const c=ueColor(ue);
+    doc.setFillColor(...c);doc.circle(lx+1.4,ly-1.3,1.4,"F");
+    doc.setTextColor(70,78,86);doc.text(ue,lx+4,ly);
+    lx+=Math.min(31,8+ue.length*1.35);
+    if(lx>pageW-35){lx=margin;ly-=4}
+  });
+}
+async function generatePDF(){
+  if(!window.jspdf||!window.jspdf.jsPDF){
+    alert("Le module PDF n’a pas pu se charger. Vérifie la connexion internet puis réessaie.");
+    return;
+  }
+  pdfBtn.disabled=true;pdfBtn.textContent="Création du PDF…";
+  try{
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true});
+    const monday=mondayOfWeek(todayISO());
+    drawWeekPage(doc,monday,1);
+    doc.addPage("a4","landscape");
+    drawWeekPage(doc,addDays(monday,7),2);
+    doc.save(`planning_methode_des_J_${monday}_au_${addDays(monday,13)}.pdf`);
+  }catch(err){
+    console.error(err);alert("Impossible de générer le PDF.");
+  }finally{
+    pdfBtn.disabled=false;pdfBtn.textContent="PDF planning · 2 semaines";
+  }
 }
 
 dateLabel.textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
@@ -500,18 +526,14 @@ document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));
   ["today","ues","progress","settings"].forEach(n=>document.getElementById("view-"+n).classList.toggle("hidden",n!==b.dataset.tab));
 }));
-
 document.querySelectorAll(".subtab").forEach(b=>b.addEventListener("click",()=>{
-  mode=b.dataset.mode;
-  planDate.value=todayISO(); // Retour naturel à aujourd'hui à chaque changement de vue.
+  mode=b.dataset.mode;planDate.value=todayISO();
   document.querySelectorAll(".subtab").forEach(x=>x.classList.toggle("active",x===b));
-  kpiDetail.classList.add("hidden");
-  renderPlanning();
+  kpiDetail.classList.add("hidden");renderPlanning();
 }));
 planDate.addEventListener("change",()=>{kpiDetail.classList.add("hidden");renderPlanning()});
 todayBtn.addEventListener("click",()=>{planDate.value=todayISO();mode="day";document.querySelectorAll(".subtab").forEach(x=>x.classList.toggle("active",x.dataset.mode==="day"));renderPlanning()});
-pdfWeekBtn.addEventListener("click",exportWeekPDF);
-
+pdfBtn.addEventListener("click",generatePDF);
 kpiTodayBtn.addEventListener("click",()=>showKpiDetail("today"));
 kpiLateBtn.addEventListener("click",()=>showKpiDetail("late"));
 kpiDoneBtn.addEventListener("click",()=>showKpiDetail("done"));
@@ -533,17 +555,13 @@ saveIntervals.addEventListener("click",()=>{
 });
 exportBtn.addEventListener("click",exportBackup);
 backupNowBtn.addEventListener("click",exportBackup);
-backupLaterBtn.addEventListener("click",()=>{
-  state.backupSnoozeUntil=new Date(Date.now()+24*60*60*1000).toISOString();save();renderBackupReminder();
-});
+backupLaterBtn.addEventListener("click",()=>{state.backupSnoozeUntil=new Date(Date.now()+24*60*60*1000).toISOString();save();renderBackupReminder()});
 importInput.addEventListener("change",async e=>{
   const f=e.target.files?.[0];if(!f)return;
   try{
     const x=JSON.parse(await f.text());
     if(!Array.isArray(x.ues)||!Array.isArray(x.intervals)||!Array.isArray(x.sheets))throw 0;
-    if(confirm("Remplacer les données actuelles par cette sauvegarde ?")){
-      state=migrate(x);save();renderAll();alert("Sauvegarde restaurée.");
-    }
+    if(confirm("Remplacer les données actuelles par cette sauvegarde ?")){state=migrate(x);save();renderAll();alert("Sauvegarde restaurée.")}
   }catch(_){alert("Fichier de sauvegarde invalide.")}
   e.target.value="";
 });
